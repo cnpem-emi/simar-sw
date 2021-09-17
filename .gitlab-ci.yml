@@ -1,0 +1,6 @@
+image: gcc:9.3.0
+
+spi_utils:
+    stage: build
+    script:
+        - make && make examples
