@@ -248,10 +248,6 @@ int main(int argc, char* argv[])
             syslog(LOG_NOTICE, "Pressure moving average for %d was %.3f\n", i, avg);
 
             avg += pressure_delta;
-
-            for (int j = 0; j < WINDOW_SIZE; j++)
-                sensors[i].window[j] = avg;
-
             sensors[i].past_pres = avg;
 
             for (;;) {
@@ -269,19 +265,25 @@ int main(int argc, char* argv[])
             }
 
             reply = redisCommand(c, "GET open_%s", sensors[i].name);
+            syslog(LOG_NOTICE, "Sensor %d had open state %s", i, reply->str);
 
-            if (reply->str - '0') {
+            if (!strcmp(reply->str, "1")) {
+                syslog(LOG_NOTICE, "Sensor %d had open avg. %s", i, reply->str);
                 freeReplyObject(reply);
                 reply = redisCommand(c, "GET openavg_%s", sensors[i].name);
 
                 if (reply->str && atof(reply->str)) {
                     sensors[i].open_average = atof(reply->str) + pressure_delta;
                     sensors[i].strikes_closed = WINDOW_SIZE;
+                    sensors[i].average = sensors[i].open_average - 0.3;
+                    for (int j = 0; j < WINDOW_SIZE; j++) sensors[i].window[j] = sensors[i].open_average;
                 }
-
-                freeReplyObject(reply);
+            } else {
+                for (int j = 0; j < WINDOW_SIZE; j++) sensors[i].window[j] = avg;
             }
+
         }
+        freeReplyObject(reply);
 
         reply = (redisReply*)redisCommand(c, "SADD valid_sensors %s", sensors[i].name);
         freeReplyObject(reply);

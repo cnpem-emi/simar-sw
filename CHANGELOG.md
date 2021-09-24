@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2021-09-21
+### Added
+- Monitors voltage and current (up to 8 channels)
+- Remote actuation functionalities
+- Wireless (plug-and-play) version, capable of logging to external drives automatically
+- BME280/BMP280 autodetection, allows different sensors on a single SIMAR
+- More logging information
+
+### Changed
+- Fixes false positives when restoring pressure moving averages
+- Reduces memory usage by freeing certain unused Redis reply objects (down to 1008 kB!)
+
 ## [1.1.0] - 2021-07-28
 ### Added
 - Program now autodetects sensors; user only has to enter the desired names

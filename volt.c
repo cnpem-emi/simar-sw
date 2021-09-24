@@ -55,12 +55,11 @@ void connect_remote() {
 }
 
 void *command_listener() {
-    redisReply *reply, *up_reply;
+    redisReply *reply, *up_reply, *rb_reply;
+    uint8_t command;
 
     connect_remote();
-
     syslog(LOG_NOTICE, "Redis command DB connected");
-    uint8_t command, outlet;
 
     const struct timespec *period = (const struct timespec[]){ { 1, 0 } };
     while (1) {
@@ -71,45 +70,38 @@ void *command_listener() {
 
         freeReplyObject(reply);
 
-        reply = redisCommand(c_remote,"LPOP %s", name);
+        reply = redisCommand(c_remote,"HMGET %s 0 1 2 3 4 5 6 7", name);
+        up_reply = redisCommand(c_remote,"HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
-        if(reply->type == REDIS_REPLY_STRING && strlen(reply->str) > 0) {
-            command = reply->str[0] - '0';
-            outlet = reply->str[2] - '0';
+        pthread_mutex_lock (&spi_mutex); // Lock SPI to prevent voltage/current readout thread from messing with outlets
+        select_module(0,3);
 
-            if(outlet > 8) {
-                syslog(LOG_ERR, "Received malformed command: %s", reply->str);
-                freeReplyObject(reply);
-                continue;
+        if(reply->type == REDIS_REPLY_ARRAY) {
+            for(int i = 0; i < (int)reply->elements; i++) {
+                command = reply->element[i]->str[0] - '0';
+                if(reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
+                    if(command != 1 && command != 0) {
+                        syslog(LOG_ERR, "Received malformed command: %d", command);
+                        rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i, up_reply->element[i]->str[0] - '0');
+                        freeReplyObject(rb_reply);
+                        continue;
+                    }
+                    write_data(0b00000, command ? "\xff" : "\x00", 1);
+
+                    syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str+2, i, command == 1 ? "on" : "off");
+                    rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
+                    freeReplyObject(rb_reply);
+                }
             }
-
-            pthread_mutex_lock (&spi_mutex); // Lock SPI to prevent voltage/current readout thread from messing with outlets
-            select_module(0,3);
-
-            switch(command) {
-                case 0:
-                    write_data(0b00000, "\x00", 1);
-                    syslog(LOG_NOTICE, "User %s switched outlet %d off", reply->str+4, outlet);
-                    // Write new outlet status to server, so that the GUI can use it
-                    up_reply = redisCommand(c_remote, "SREM %s:Outlets %d", name, outlet);
-                    freeReplyObject(up_reply);
-                break;
-                case 1:
-                    write_data(0b00000, "\xff", 1);
-                    syslog(LOG_NOTICE, "User %s switched outlet %d on", reply->str+4, outlet);
-                    up_reply = redisCommand(c_remote, "SADD %s:Outlets %d", name, outlet);
-                    freeReplyObject(up_reply);
-                break;
-            }
-
-            select_module(0, 24);
-            pthread_mutex_unlock (&spi_mutex);
-
         } else if (reply->type == REDIS_REPLY_ERROR) {
             connect_remote();
         }
 
+        select_module(0, 24);
+        pthread_mutex_unlock (&spi_mutex);
+
         freeReplyObject(reply);
+        freeReplyObject(up_reply);
         nanosleep(period, NULL);
     }
 }
@@ -124,7 +116,8 @@ void *glitch_counter() {
     if (prufd.fd < 0)
     {
         syslog(LOG_ERR, "Failed to communicate with PRU");
-        exit(-9);
+        for(;;){}
+        //exit(-9);
     }
 
     for(;;) {
