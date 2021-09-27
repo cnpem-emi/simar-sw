@@ -11,9 +11,6 @@ Works much better with Redis >= 6.0.0
 
 # SIMAR sensors utility 
 
-## In-depth Documentation 
-https://cnpemcamp.sharepoint.com/sites/iot/SitePages/SIMAR-Soft.aspx
-
 ## Basic utilization
 
 ### BME280
