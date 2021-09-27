@@ -38,5 +38,5 @@ if [[ $RETRIES -ge 20 ]]; then
     #redis-cli incr retries
 fi
 
-/root/spi-utils/init_bme vac con elp1 epp elp2
+/root/simar-software/init_bme vac con elp1 epp elp2
 #/root/spi-utils/init_wireless
