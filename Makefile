@@ -49,7 +49,7 @@ bmp_commons.o: BMP280/common/common.c
 	rm -rf hiredis
 
 examples: spiutil.o
-	cd utils
+	cd Utils
 	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_dac.c -o bdac
 	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_adc.c -o badc
 	gcc ../spiutil.o ./DHT/example.c ./DHT/dht.c -o dht
