@@ -1,11 +1,14 @@
 # SIMAR Software
 
-Protocols that are confirmed working in BBB kernel version >4.19 with the additional boards:
+Protocols that are confirmed working in BBB kernel version >=4.19 with the additional boards:
 - [x] UART
 - [x] I2C
 - [x] SPI
 - [x] OneWire
 - [x] Analog (ADC/DAC)
+
+Features that are only available in the TI kernel:
+- [x] PRU communication (used for glitch detection/power factor)
 
 Works much better with Redis >= 6.0.0
 
