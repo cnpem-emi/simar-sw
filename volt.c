@@ -11,7 +11,10 @@
 
 #define OUTLET_QUANTITY 8
 #define RESOLUTION 0.01953125
-#define PRU_DEVICE_NAME "/dev/rpmsg_pru30"
+#define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
+#define PRU1_DEVICE_NAME "/dev/rpmsg_pru31"
+
+const struct timespec *period = (const struct timespec[]){ { 1, 0 } };
 
 const char servers[11][16] = { 
     "10.0.38.59",
@@ -61,7 +64,6 @@ void *command_listener() {
     connect_remote();
     syslog(LOG_NOTICE, "Redis command DB connected");
 
-    const struct timespec *period = (const struct timespec[]){ { 1, 0 } };
     while (1) {
         reply = redisCommand(c, "HMGET device ip_address name");
 
@@ -106,16 +108,48 @@ void *command_listener() {
     }
 }
 
+void *pf_measure() {
+    struct pollfd pollfd;
+    uint8_t offset = 0;
+    uint32_t counts[4];
+
+    pollfd.fd = open(PRU1_DEVICE_NAME, O_RDWR);
+
+    if (pollfd.fd < 0)
+    {
+        syslog(LOG_ERR, "Failed to communicate with PRU1");
+        for(;;){}
+        //exit(-9);
+    }
+
+    char buf[512];
+
+    for(;;) {
+        write(pollfd.fd, "-", 1);
+
+        if (read(pollfd.fd, buf, 512))
+        {
+            for (int i = 0; i < 2; i++) {
+                counts[i] = (buf[offset+3] << 24) | (buf[offset+2] << 16) | (buf[offset+1] << 8) | buf[offset];
+                offset+=4;
+            }
+
+            printf("%.3f", (double)counts[0]/((double)counts[1]+(double)counts[0]));
+        }
+    }
+}
+
 void *glitch_counter() { 
     struct pollfd prufd;
 
-    prufd.fd = open(PRU_DEVICE_NAME, O_RDWR);
+    prufd.fd = open(PRU0_DEVICE_NAME, O_RDWR);
     char buf[512];
     redisReply *reply;
 
+
     if (prufd.fd < 0)
     {
-        syslog(LOG_ERR, "Failed to communicate with PRU");
+        syslog(LOG_ERR, "Failed to communicate with PRU0");
         for(;;){}
         //exit(-9);
     }
@@ -131,6 +165,7 @@ void *glitch_counter() {
             freeReplyObject(reply);
             read(prufd.fd, buf, 512);
         }
+        nanosleep(period, NULL);
     }
 }
 double calc_voltage(char *buffer) {
@@ -178,6 +213,9 @@ int main(int argc, char* argv[])
     pthread_t glitch_thread;
     pthread_create(&glitch_thread, NULL, glitch_counter, NULL);
 
+    pthread_t pf_thread;
+    pthread_create(&pf_thread, NULL, pf_measure, NULL);
+
     select_module(0, 24);
 
     // Dummy conversions
@@ -188,7 +226,7 @@ int main(int argc, char* argv[])
 
     int i = 0;
 
-    const struct timespec *period = (const struct timespec[]){{ 0, 800000000L }};
+    const struct timespec *inner_period = (const struct timespec[]){{ 0, 800000000L }};
     while(1) {
         pthread_mutex_lock (&spi_mutex);
         peak_voltage = 0;
@@ -216,6 +254,6 @@ int main(int argc, char* argv[])
         reply = redisCommand(c, "SET ich_%d %.3f", 0, current);
         freeReplyObject(reply);
 
-        nanosleep(period, NULL);
+        nanosleep(inner_period, NULL);
     }
 }
