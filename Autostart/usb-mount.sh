@@ -3,6 +3,8 @@
 # This script is called from our systemd unit file to mount or unmount
 # a USB drive.
 
+# By Mike Blackwell https://serverfault.com/questions/766506/automount-usb-drives-with-systemd
+
 usage()
 {
     echo "Usage: $0 {add|remove} device_name (e.g. sdb1)"
