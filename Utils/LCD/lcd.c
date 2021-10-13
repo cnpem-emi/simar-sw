@@ -5,7 +5,7 @@
 #include <time.h>
 
 #include "lcd.h"
-#include "../SPI/common.h"
+#include "../../SPI/common.h"
 
 #define AUTOCS 0
 

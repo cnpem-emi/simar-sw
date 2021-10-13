@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "dht.h"
-#include "../SPI/common.h"
+#include "../../SPI/common.h"
 
 
 int main()

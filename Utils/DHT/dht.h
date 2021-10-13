@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "../SPI/common.h"
+#include "../../SPI/common.h"
 
 #define DHT_PULSES 41
 

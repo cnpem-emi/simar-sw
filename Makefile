@@ -49,12 +49,12 @@ bmp_commons.o: BMP280/common/common.c
 	rm -rf hiredis
 
 examples: spiutil.o
-	cd Utils
-	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_dac.c -o bdac
-	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_adc.c -o badc
-	gcc ../spiutil.o ./DHT/example.c ./DHT/dht.c -o dht
-	gcc ../spiutil.o ./LCD/example.c ./LCD/lcd.c -o lcd
-	gcc ./DS1820/ds.c -o ds
+	cd Utils; \
+	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_dac.c -o bdac; \
+	gcc ../spiutil.o ./ADC-DAC/BBB/bbb_adc.c -o badc; \
+	gcc ../spiutil.o ./DHT/example.c ./DHT/dht.c -o dht; \
+	gcc ../spiutil.o ./LCD/example.c ./LCD/lcd.c -o lcd; \
+	gcc ./DS1820/ds.c -o ds; 
 
 install:
 	sed -i '/bind 127.0.0.1/c\bind 0.0.0.0' /etc/redis/*.conf
