@@ -80,9 +80,9 @@ void update_open(struct sensor_data* sensor)
     double open_diff = sensor->open_average - sensor->data.pressure;
 
     if ((sensor->is_open && sensor->strikes_closed == WINDOW_SIZE) || (!sensor->is_open && sensor->strikes_closed == 0)) {
-        if (sensor->average == 0 || (diff > -0.2 && diff < 0.4 && !sensor->is_open))
+        if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open))
             sensor->average = sum / WINDOW_SIZE;
-        else if (sensor->is_open && (sensor->open_average == 0 || (open_diff > -0.4 && open_diff < 0.2)))
+        else if (sensor->is_open && (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08)))
             sensor->open_average = sum / WINDOW_SIZE;
     }
 
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
 
     double pressure_delta = 0;
 
-    reply_remote = redisCommand(c_remote, "GET B15_pressure");
+    reply_remote = redisCommand(c_remote, "GET pressure_B15");
 
     if(reply_remote->str) {
         double external_pressure = atof(reply_remote->str);
