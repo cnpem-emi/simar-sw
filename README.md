@@ -15,7 +15,7 @@ Works much better with Redis >= 6.0.0
 
 ### BME280
 ``` 
-make init_bmp
+make init_bme
 ```
 
 ### BME280 (Plug-and-play, no door mode)
@@ -29,8 +29,6 @@ make install
 ``` 
 
 ### Wireless
-Automount code by Mike Blackwell
-
 ```
 make install_wireless
 ```
