@@ -1,6 +1,6 @@
 # SIMAR Software
 
-Protocols that are confirmed working in BBB kernel version >=4.19 with the additional boards:
+Protocols that are confirmed working in BBB kernel version >=4.14 with the additional boards:
 - [x] UART
 - [x] I2C
 - [x] SPI
