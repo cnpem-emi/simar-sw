@@ -106,7 +106,7 @@ int8_t check_alteration(struct sensor_data sensor)
         exit(SENSOR_FAIL);
     }
 
-    return sensor.past_pres == 0 || (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 && sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
+    return sensor.past_pres == 0 || (fabs(sensor.past_pres - sensor.data.pressure) < 2 && sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
 }
 
 int main(int argc, char* argv[])
