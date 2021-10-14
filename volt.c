@@ -16,7 +16,7 @@
 
 const struct timespec *period = (const struct timespec[]){ { 1, 0 } };
 
-const char servers[11][16] = { 
+const char servers[11][16] = {
     "10.0.38.59",
     "10.0.38.46",
     "10.0.38.42",
@@ -59,6 +59,17 @@ void connect_remote() {
 
 void *command_listener() {
     redisReply *reply, *up_reply, *rb_reply;
+    char names[8][64];
+    uint8_t n_names = 0;
+    up_reply = redisCommand(c,"LRANGE valid_sensors 0 -1");
+
+    if(up_reply->type == REDIS_REPLY_ARRAY) {
+        n_names = (int)up_reply->elements;
+        for(int i = 0; i < n_names; i++) strncpy(names[i], up_reply->element[i]->str, 64);
+    }
+
+    freeReplyObject(up_reply);
+
     uint8_t command;
 
     connect_remote();
@@ -99,11 +110,31 @@ void *command_listener() {
             connect_remote();
         }
 
+        freeReplyObject(reply);
+        freeReplyObject(up_reply);
+
+        reply = redisCommand(c_remote,"SMEMBERS %s:AT", name);
+
+        if(reply->type == REDIS_REPLY_ARRAY) {
+            for(int i = 0; i < (int)reply->elements; i++) {
+                command = reply->element[i]->str[0] - '0';
+                if(command >= 0 && command < 8 && command < n_names) {
+                    rb_reply = redisCommand(c, "GET temperature_%s", names[command]);
+                    if(rb_reply->type == REDIS_REPLY_STRING) {
+                        if (atof(rb_reply->str) > 26.08)
+                            printf("ON\n");
+                        else
+                            printf("OFF\n");
+                    }
+                    freeReplyObject(rb_reply);
+                }
+            }
+        }
+
         select_module(0, 24);
         pthread_mutex_unlock (&spi_mutex);
 
         freeReplyObject(reply);
-        freeReplyObject(up_reply);
         nanosleep(period, NULL);
     }
 }
@@ -134,7 +165,7 @@ void *pf_measure() {
                 offset+=4;
             }
 
-            printf("%.3f", (double)counts[0]/((double)counts[1]+(double)counts[0]));
+            //printf("%.3f", (double)counts[0]/((double)counts[1]+(double)counts[0]));
         }
     }
 }

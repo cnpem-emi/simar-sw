@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
         }
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "SADD valid_sensors %s", sensors[i].name);
+        reply = (redisReply*)redisCommand(c, "RPUSH valid_sensors %s", sensors[i].name);
         freeReplyObject(reply);
 
         update_open(&sensors[i]);
