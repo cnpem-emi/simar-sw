@@ -16,7 +16,7 @@
 
 const struct timespec *period = (const struct timespec[]){ { 1, 0 } };
 
-const char servers[11][16] = { 
+const char servers[11][16] = {
     "10.0.38.59",
     "10.0.38.46",
     "10.0.38.42",
@@ -59,6 +59,17 @@ void connect_remote() {
 
 void *command_listener() {
     redisReply *reply, *up_reply, *rb_reply;
+    char names[8][64];
+    uint8_t n_names = 0;
+    up_reply = redisCommand(c,"LRANGE valid_sensors 0 -1");
+
+    if(up_reply->type == REDIS_REPLY_ARRAY) {
+        n_names = (int)up_reply->elements;
+        for(int i = 0; i < n_names; i++) strncpy(names[i], up_reply->element[i]->str, 64);
+    }
+
+    freeReplyObject(up_reply);
+
     uint8_t command;
 
     connect_remote();
@@ -75,7 +86,6 @@ void *command_listener() {
         reply = redisCommand(c_remote,"HMGET %s 0 1 2 3 4 5 6 7", name);
         up_reply = redisCommand(c_remote,"HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
-        pthread_mutex_lock (&spi_mutex); // Lock SPI to prevent voltage/current readout thread from messing with outlets
         select_module(0,3);
 
         if(reply->type == REDIS_REPLY_ARRAY) {
@@ -88,7 +98,9 @@ void *command_listener() {
                         freeReplyObject(rb_reply);
                         continue;
                     }
+                    pthread_mutex_lock (&spi_mutex);
                     write_data(0b00000, command ? "\xff" : "\x00", 1);
+                    pthread_mutex_unlock (&spi_mutex);
 
                     syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str+2, i, command == 1 ? "on" : "off");
                     rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
@@ -99,11 +111,30 @@ void *command_listener() {
             connect_remote();
         }
 
-        select_module(0, 24);
-        pthread_mutex_unlock (&spi_mutex);
-
         freeReplyObject(reply);
         freeReplyObject(up_reply);
+
+        reply = redisCommand(c_remote,"SMEMBERS %s:AT", name);
+
+        if(reply->type == REDIS_REPLY_ARRAY) {
+            for(int i = 0; i < (int)reply->elements; i++) {
+                command = reply->element[i]->str[0] - '0';
+                if(command < 8 && command < n_names) {
+                    rb_reply = redisCommand(c, "GET temperature_%s", names[command]);
+                    if(rb_reply->type == REDIS_REPLY_STRING) {
+                        pthread_mutex_lock (&spi_mutex);
+                        // TODO: Refine check logic after discussing standard
+                        write_data(0b00000, atof(rb_reply->str) > 26 ? "\x01" : "\x00", 1); 
+                        pthread_mutex_unlock (&spi_mutex);
+                    }
+                    freeReplyObject(rb_reply);
+                }
+            }
+        }
+
+        select_module(0, 24);
+
+        freeReplyObject(reply);
         nanosleep(period, NULL);
     }
 }
@@ -134,7 +165,7 @@ void *pf_measure() {
                 offset+=4;
             }
 
-            printf("%.3f", (double)counts[0]/((double)counts[1]+(double)counts[0]));
+            //printf("%.3f", (double)counts[0]/((double)counts[1]+(double)counts[0]));
         }
     }
 }
