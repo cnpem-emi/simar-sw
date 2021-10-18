@@ -86,7 +86,6 @@ void *command_listener() {
         reply = redisCommand(c_remote,"HMGET %s 0 1 2 3 4 5 6 7", name);
         up_reply = redisCommand(c_remote,"HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
-        pthread_mutex_lock (&spi_mutex); // Lock SPI to prevent voltage/current readout thread from messing with outlets
         select_module(0,3);
 
         if(reply->type == REDIS_REPLY_ARRAY) {
@@ -99,7 +98,9 @@ void *command_listener() {
                         freeReplyObject(rb_reply);
                         continue;
                     }
+                    pthread_mutex_lock (&spi_mutex);
                     write_data(0b00000, command ? "\xff" : "\x00", 1);
+                    pthread_mutex_unlock (&spi_mutex);
 
                     syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str+2, i, command == 1 ? "on" : "off");
                     rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
@@ -118,13 +119,13 @@ void *command_listener() {
         if(reply->type == REDIS_REPLY_ARRAY) {
             for(int i = 0; i < (int)reply->elements; i++) {
                 command = reply->element[i]->str[0] - '0';
-                if(command >= 0 && command < 8 && command < n_names) {
+                if(command < 8 && command < n_names) {
                     rb_reply = redisCommand(c, "GET temperature_%s", names[command]);
                     if(rb_reply->type == REDIS_REPLY_STRING) {
-                        if (atof(rb_reply->str) > 26.08)
-                            printf("ON\n");
-                        else
-                            printf("OFF\n");
+                        pthread_mutex_lock (&spi_mutex);
+                        // TODO: Refine check logic after discussing standard
+                        write_data(0b00000, atof(rb_reply->str) > 26 ? "\x01" : "\x00", 1); 
+                        pthread_mutex_unlock (&spi_mutex);
                     }
                     freeReplyObject(rb_reply);
                 }
@@ -132,7 +133,6 @@ void *command_listener() {
         }
 
         select_module(0, 24);
-        pthread_mutex_unlock (&spi_mutex);
 
         freeReplyObject(reply);
         nanosleep(period, NULL);
