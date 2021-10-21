@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
 
             for (;;) {
                 bme_read(&sensors[i].dev, &sensors[i].data);
-                if (check_alteration(sensors[i]))
+                if (sensors[i].data.pressure > 800 && sensors[i].data.pressure < 1000)
                     break;
             }
 
