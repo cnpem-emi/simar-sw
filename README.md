@@ -16,6 +16,8 @@ Works much better with Redis >= 6.0.0
 
 ## Basic utilization
 
+Run `./install.sh` and follow the onscreen instructions. Or:
+
 ### BME280
 ``` 
 make init_bme
@@ -36,12 +38,12 @@ make install
 make install_wireless
 ```
 
+NOTE: This option requires user input
+
 ### Voltage/Current/Actuation
 ```
 make init_volt
 ```
-
-NOTE: This option requires user input
 
 ## Important notes
 - If SPI isn't working, check the bus before anything else. Depending on your board, the first bus might be either 1.0 or 0.0
