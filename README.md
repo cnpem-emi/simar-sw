@@ -1,5 +1,9 @@
 # SIMAR Software
 
+SIMAR is an easily deployable intelligent platform for extensive monitoring and remote actuation of electrical systems and environment data, such as temperature, humidity, voltage, power factor and current. 
+
+## Communication
+
 Protocols that are confirmed working in BBB kernel version >=4.14 with the additional boards:
 - [x] UART
 - [x] I2C
