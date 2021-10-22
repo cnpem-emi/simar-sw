@@ -13,33 +13,33 @@
 extern "C" {
 #endif
 
-#include "../bmp2.h"
 #include "../../I2C/common.h"
+#include "../bmp2.h"
 
-struct sensor_data
-{
-    /*! Last valid pressure reading */
-    double past_pres;
-    /*! Closed door pressure average */
-    double average;
-    /*! Open door pressure average */
-    double open_average;
-    /*! Device compensated data */
-    struct bmp2_data data;
-    /*! Moving average window */
-    double window[WINDOW_SIZE];
-    /*! BMP280 device */
-    struct bmp2_dev dev;
-    /*! Number of times sensor was significantly above the average closed door pressure */
-    uint8_t strikes_closed;
-    /*! Rack door status */
-    uint8_t is_open;
-    /*! Identifier*/
-    struct identifier id;
-    /*! Device config */
-    struct bmp2_config config;
-    /*! Sensor nickname */
-    char name[MAX_NAME_LEN];
+struct sensor_data {
+  /*! Last valid pressure reading */
+  double past_pres;
+  /*! Closed door pressure average */
+  double average;
+  /*! Open door pressure average */
+  double open_average;
+  /*! Device compensated data */
+  struct bmp2_data data;
+  /*! Moving average window */
+  double window[WINDOW_SIZE];
+  /*! BMP280 device */
+  struct bmp2_dev dev;
+  /*! Number of times sensor was significantly above the average closed door
+   * pressure */
+  uint8_t strikes_closed;
+  /*! Rack door status */
+  uint8_t is_open;
+  /*! Identifier*/
+  struct identifier id;
+  /*! Device config */
+  struct bmp2_config config;
+  /*! Sensor nickname */
+  char name[MAX_NAME_LEN];
 };
 
 /***************************************************************************/
@@ -61,7 +61,10 @@ struct sensor_data
  *  @retval != BMP2_INTF_RET_SUCCESS -> Failure.
  *
  */
-BMP2_INTF_RET_TYPE bmp2_spi_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t length, void *intf_ptr);
+BMP2_INTF_RET_TYPE bmp2_spi_read(uint8_t reg_addr,
+                                 uint8_t* reg_data,
+                                 uint32_t length,
+                                 void* intf_ptr);
 
 /*!
  *  @brief Function for reading the sensor's registers through I2C bus.
@@ -77,13 +80,17 @@ BMP2_INTF_RET_TYPE bmp2_spi_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
  *  @retval != BMP2_INTF_RET_SUCCESS -> Failure.
  *
  */
-BMP2_INTF_RET_TYPE bmp2_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t length, void *intf_ptr);
+BMP2_INTF_RET_TYPE bmp2_i2c_read(uint8_t reg_addr,
+                                 uint8_t* reg_data,
+                                 uint32_t length,
+                                 void* intf_ptr);
 
 /*!
  *  @brief Function for writing the sensor's registers through SPI bus.
  *
  *  @param[in] reg_addr   : Register address.
- *  @param[in] reg_data   : Pointer to the data buffer whose data has to be written.
+ *  @param[in] reg_data   : Pointer to the data buffer whose data has to be
+ * written.
  *  @param[in] length     : No of bytes to write.
  *  @param[in] intf_ptr   : Interface pointer
  *
@@ -93,13 +100,17 @@ BMP2_INTF_RET_TYPE bmp2_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t l
  *  @retval != BMP2_INTF_RET_SUCCESS -> Failure.
  *
  */
-BMP2_INTF_RET_TYPE bmp2_spi_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t length, void *intf_ptr);
+BMP2_INTF_RET_TYPE bmp2_spi_write(uint8_t reg_addr,
+                                  const uint8_t* reg_data,
+                                  uint32_t length,
+                                  void* intf_ptr);
 
 /*!
  *  @brief Function for writing the sensor's registers through I2C bus.
  *
  *  @param[in] reg_addr : Register address.
- *  @param[in] reg_data : Pointer to the data buffer whose value is to be written.
+ *  @param[in] reg_data : Pointer to the data buffer whose value is to be
+ * written.
  *  @param[in] length   : No of bytes to write.
  *  @param[in] intf_ptr : Interface pointer
  *
@@ -109,18 +120,21 @@ BMP2_INTF_RET_TYPE bmp2_spi_write(uint8_t reg_addr, const uint8_t *reg_data, uin
  *  @retval != BMP2_INTF_RET_SUCCESS -> Failure.
  *
  */
-BMP2_INTF_RET_TYPE bmp2_i2c_write(uint8_t reg_addr, const uint8_t *reg_data, uint32_t length, void *intf_ptr);
+BMP2_INTF_RET_TYPE bmp2_i2c_write(uint8_t reg_addr,
+                                  const uint8_t* reg_data,
+                                  uint32_t length,
+                                  void* intf_ptr);
 
 /*!
- *  @brief This function provides the delay for required time (Microsecond) as per the input provided in some of the
- *  APIs.
+ *  @brief This function provides the delay for required time (Microsecond) as
+ * per the input provided in some of the APIs.
  *
  *  @param[in] period_us  : The required wait time in microsecond.
  *  @param[in] intf_ptr   : Interface pointer
  *
  *  @return void.
  */
-void bmp2_delay_us(uint32_t period_us, void *intf_ptr);
+void bmp2_delay_us(uint32_t period_us, void* intf_ptr);
 
 /*!
  *  @brief This function is to select the interface between SPI and I2C.
@@ -134,13 +148,15 @@ void bmp2_delay_us(uint32_t period_us, void *intf_ptr);
  *  @retval 0 -> Success
  *  @retval < 0 -> Failure
  */
-int8_t bmp2_interface_selection(struct sensor_data *sensor, uint8_t intf, uint8_t addr);
+int8_t bmp2_interface_selection(struct sensor_data* sensor, uint8_t intf, uint8_t addr);
 
 /*!
  *  @brief This API is used to print the execution status.
  *
- *  @param[in] api_name : Name of the API whose execution status has to be printed.
- *  @param[in] rslt     : Error code returned by the API whose execution status has to be printed.
+ *  @param[in] api_name : Name of the API whose execution status has to be
+ * printed.
+ *  @param[in] rslt     : Error code returned by the API whose execution status
+ * has to be printed.
  *
  *  @return void.
  */
@@ -162,7 +178,7 @@ void bmp2_coines_deinit(void);
  *  @return Status of execution.
  *
  */
-int8_t bmp_init(struct sensor_data *sensor, uint8_t addr);
+int8_t bmp_init(struct sensor_data* sensor, uint8_t addr);
 
 /*!
  * @brief Reads temperature/pressure data
@@ -171,7 +187,7 @@ int8_t bmp_init(struct sensor_data *sensor, uint8_t addr);
  *  @return Status of execution.
  *
  */
-int8_t bmp_read(struct sensor_data *sensor);
+int8_t bmp_read(struct sensor_data* sensor);
 
 #ifdef __cplusplus
 }
