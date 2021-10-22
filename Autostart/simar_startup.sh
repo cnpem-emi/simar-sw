@@ -50,9 +50,9 @@ echo $RETRIES
 if [[ $RETRIES -ge 20 ]]; then
     redis-cli set retries 0
     reboot
-#else
-    #redis-cli incr retries
+else
+    redis-cli incr retries
 fi
 
-/root/simar-software/init_bme vac con elp1 epp elp2
+/root/simar-software/init_bme
 #/root/spi-utils/init_wireless
