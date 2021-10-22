@@ -14,8 +14,8 @@
 #define P8_19 "/sys/class/pwm/pwmchip7/pwm-7:0/"
 #define P8_13 "/sys/class/pwm/pwmchip7/pwm-7:1/"
 
-int set_period(int per, char *pin);
-int set_duty(int dut, char *pin);
-int enable(char *pin);
+int set_period(int per, char* pin);
+int set_duty(int dut, char* pin);
+int enable(char* pin);
 
 #endif

@@ -1,40 +1,40 @@
 /**
-* Copyright (c) 2021 Bosch Sensortec GmbH. All rights reserved.
-*
-* BSD-3-Clause
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-*
-* 3. Neither the name of the copyright holder nor the names of its
-*    contributors may be used to endorse or promote products derived from
-*    this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*
-* @file       bmp2.h
-* @date       2021-05-21
-* @version    v1.0.1
-*
-*/
+ * Copyright (c) 2021 Bosch Sensortec GmbH. All rights reserved.
+ *
+ * BSD-3-Clause
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @file       bmp2.h
+ * @date       2021-05-21
+ * @version    v1.0.1
+ *
+ */
 
 /*! @file bmp2.h
  * @brief Sensor driver for BMP2 sensor
@@ -85,7 +85,7 @@ extern "C" {
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_init(struct bmp2_dev *dev);
+int8_t bmp2_init(struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -97,8 +97,8 @@ int8_t bmp2_init(struct bmp2_dev *dev);
  * \ingroup bmp2ApiRegs
  * \page bmp2_api_bmp2_get_regs bmp2_get_regs
  * \code
- * int8_t bmp2_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct bmp2_dev *dev);
- * \endcode
+ * int8_t bmp2_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len,
+ * struct bmp2_dev *dev); \endcode
  * @details This API reads the data from the given register address of the
  * sensor.
  *
@@ -112,14 +112,14 @@ int8_t bmp2_init(struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct bmp2_dev *dev);
+int8_t bmp2_get_regs(uint8_t reg_addr, uint8_t* reg_data, uint32_t len, struct bmp2_dev* dev);
 
 /*!
  * \ingroup bmp2ApiRegs
  * \page bmp2_api_bmp2_set_regs bmp2_set_regs
  * \code
- * int8_t bmp2_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint32_t len, struct bmp2_dev *dev);
- * \endcode
+ * int8_t bmp2_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint32_t
+ * len, struct bmp2_dev *dev); \endcode
  * @details This API writes the given data to the register addresses
  * of the sensor.
  *
@@ -134,7 +134,10 @@ int8_t bmp2_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct b
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint32_t len, struct bmp2_dev *dev);
+int8_t bmp2_set_regs(uint8_t* reg_addr,
+                     const uint8_t* reg_data,
+                     uint32_t len,
+                     struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -157,7 +160,7 @@ int8_t bmp2_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint32_t len, s
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_soft_reset(struct bmp2_dev *dev);
+int8_t bmp2_soft_reset(struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -182,14 +185,14 @@ int8_t bmp2_soft_reset(struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_get_power_mode(uint8_t *mode, struct bmp2_dev *dev);
+int8_t bmp2_get_power_mode(uint8_t* mode, struct bmp2_dev* dev);
 
 /*!
  * \ingroup bmp2ApiPowermode
  * \page bmp2_api_bmp2_set_power_mode bmp2_set_power_mode
  * \code
- * int8_t bmp2_set_power_mode(uint8_t mode, const struct bmp2_config *conf, struct bmp2_dev *dev);
- * \endcode
+ * int8_t bmp2_set_power_mode(uint8_t mode, const struct bmp2_config *conf,
+ * struct bmp2_dev *dev); \endcode
  * @details This API writes the power mode.
  *
  * @param[in] mode : BMP2_POWERMODE_SLEEP, BMP2_POWERMODE_NORMAL,
@@ -202,7 +205,7 @@ int8_t bmp2_get_power_mode(uint8_t *mode, struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_set_power_mode(uint8_t mode, const struct bmp2_config *conf, struct bmp2_dev *dev);
+int8_t bmp2_set_power_mode(uint8_t mode, const struct bmp2_config* conf, struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -241,7 +244,7 @@ int8_t bmp2_set_power_mode(uint8_t mode, const struct bmp2_config *conf, struct 
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_get_config(struct bmp2_config *conf, struct bmp2_dev *dev);
+int8_t bmp2_get_config(struct bmp2_config* conf, struct bmp2_dev* dev);
 
 /*!
  * \ingroup bmp2ApiConfig
@@ -249,9 +252,9 @@ int8_t bmp2_get_config(struct bmp2_config *conf, struct bmp2_dev *dev);
  * \code
  * int8_t bmp2_set_config(const struct bmp2_config *conf, struct bmp2_dev *dev);
  * \endcode
- * @details This API writes the data to the ctrl_meas register and config register.
- * It sets the over-sampling mode, power mode configuration,
- * sleep duration and IIR filter coefficient.
+ * @details This API writes the data to the ctrl_meas register and config
+ *register. It sets the over-sampling mode, power mode configuration, sleep
+ *duration and IIR filter coefficient.
  *
  * @param[in] conf : Desired configuration to the bmp2
  * conf->osrs_t, conf->osrs_p = BMP2_OS_NONE, BMP2_OS_1X,
@@ -281,7 +284,7 @@ int8_t bmp2_get_config(struct bmp2_config *conf, struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_set_config(const struct bmp2_config *conf, struct bmp2_dev *dev);
+int8_t bmp2_set_config(const struct bmp2_config* conf, struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -305,7 +308,7 @@ int8_t bmp2_set_config(const struct bmp2_config *conf, struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_get_status(struct bmp2_status *status, struct bmp2_dev *dev);
+int8_t bmp2_get_status(struct bmp2_status* status, struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -317,8 +320,8 @@ int8_t bmp2_get_status(struct bmp2_status *status, struct bmp2_dev *dev);
  * \ingroup bmp2ApiSensorData
  * \page bmp2_api_bmp2_get_sensor_data bmp2_get_sensor_data
  * \code
- * int8_t bmp2_get_sensor_data(struct bmp2_data *comp_data, struct bmp2_dev *dev);
- * \endcode
+ * int8_t bmp2_get_sensor_data(struct bmp2_data *comp_data, struct bmp2_dev
+ * *dev); \endcode
  * @details This API reads the pressure and temperature data from the
  * sensor, compensates the data and store it in the bmp2_data structure
  * instance passed by the user.
@@ -331,7 +334,7 @@ int8_t bmp2_get_status(struct bmp2_status *status, struct bmp2_dev *dev);
  * @retval   0 -> Success.
  * @retval < 0 -> Fail.
  */
-int8_t bmp2_get_sensor_data(struct bmp2_data *comp_data, struct bmp2_dev *dev);
+int8_t bmp2_get_sensor_data(struct bmp2_data* comp_data, struct bmp2_dev* dev);
 
 /*!
  * \ingroup bmp2ApiSensorData
@@ -344,8 +347,10 @@ int8_t bmp2_get_sensor_data(struct bmp2_data *comp_data, struct bmp2_dev *dev);
  * @details This API is used to compensate the pressure and
  * temperature data.
  *
- * @param[in] uncomp_data : Contains the uncompensated pressure, temperature data.
- * @param[out] comp_data  : Contains the compensated pressure and/or temperature data.
+ * @param[in] uncomp_data : Contains the uncompensated pressure, temperature
+ * data.
+ * @param[out] comp_data  : Contains the compensated pressure and/or temperature
+ * data.
  * @param[in] dev         : Structure instance of bmp2_dev.
  *
  * @return Result of API execution status.
@@ -355,9 +360,9 @@ int8_t bmp2_get_sensor_data(struct bmp2_data *comp_data, struct bmp2_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bmp2_compensate_data(const struct bmp2_uncomp_data *uncomp_data,
-                            struct bmp2_data *comp_data,
-                            struct bmp2_dev *dev);
+int8_t bmp2_compensate_data(const struct bmp2_uncomp_data* uncomp_data,
+                            struct bmp2_data* comp_data,
+                            struct bmp2_dev* dev);
 
 /**
  * \ingroup bmp2
@@ -369,12 +374,14 @@ int8_t bmp2_compensate_data(const struct bmp2_uncomp_data *uncomp_data,
  * \ingroup bmp2ApiMeasTime
  * \page bmp2_api_bmp2_compute_meas_time bmp2_compute_meas_time
  * \code
- * int8_t bmp2_compute_meas_time(uint32_t *sampling_time, const struct bmp2_config *conf, const struct bmp2_dev *dev);
- * \endcode
+ * int8_t bmp2_compute_meas_time(uint32_t *sampling_time, const struct
+ * bmp2_config *conf, const struct bmp2_dev *dev); \endcode
  * @details This API computes the measurement time in microseconds for the
- * active configuration based on standbytime(conf->odr) and over-sampling mode(conf->os_mode)
+ * active configuration based on standbytime(conf->odr) and over-sampling
+ * mode(conf->os_mode)
  *
- * @param[out] sampling_time : Measurement time for the active configuration in microseconds
+ * @param[out] sampling_time : Measurement time for the active configuration in
+ * microseconds
  * @param[in] conf           : Structure instance of bmp2_config
  * @param[in] dev            : Structure instance of bmp2_dev
  *
@@ -384,7 +391,9 @@ int8_t bmp2_compensate_data(const struct bmp2_uncomp_data *uncomp_data,
  * @retval < 0 -> Fail.
  *
  */
-int8_t bmp2_compute_meas_time(uint32_t *sampling_time, const struct bmp2_config *conf, const struct bmp2_dev *dev);
+int8_t bmp2_compute_meas_time(uint32_t* sampling_time,
+                              const struct bmp2_config* conf,
+                              const struct bmp2_dev* dev);
 
 #ifdef __cplusplus
 }

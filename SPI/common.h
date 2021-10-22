@@ -96,26 +96,25 @@ enum pins {
   P8_46 = 71
 };
 
-typedef struct
-{
+typedef struct {
   int pin;
   volatile uint32_t* base;
   int number;
 } gpio_t;
 
-int spi_open(const char *device, uint32_t *mode, uint8_t *bits, uint32_t *speed);
+int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed);
 int spi_close();
-int spi_transfer(const char *tx, const char *rx, int len);
+int spi_transfer(const char* tx, const char* rx, int len);
 
 void bbb_mmio_set_output(gpio_t gpio);
 void bbb_mmio_set_input(gpio_t gpio);
-void bbb_mmio_set_high(gpio_t gpio); 
-void bbb_mmio_set_low(gpio_t gpio); 
+void bbb_mmio_set_high(gpio_t gpio);
+void bbb_mmio_set_low(gpio_t gpio);
 uint32_t bbb_mmio_input(gpio_t gpio);
 int bbb_mmio_get_gpio(gpio_t* gpio);
 void delay_mili(uint32_t ms);
 int select_module(int address, int module);
-int write_data(int address, char *data, int len);
-int read_data(int address, char *rx);
+int write_data(int address, char* data, int len);
+int read_data(int address, char* rx);
 
 #endif

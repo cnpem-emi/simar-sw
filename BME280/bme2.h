@@ -1,40 +1,40 @@
 /**
-* Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
-*
-* BSD-3-Clause
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-*
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-*
-* 3. Neither the name of the copyright holder nor the names of its
-*    contributors may be used to endorse or promote products derived from
-*    this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*
-* @file       bme280.h
-* @date       2020-03-28
-* @version    v3.5.0
-*
-*/
+ * Copyright (c) 2020 Bosch Sensortec GmbH. All rights reserved.
+ *
+ * BSD-3-Clause
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @file       bme280.h
+ * @date       2020-03-28
+ * @version    v3.5.0
+ *
+ */
 
 /*! @file bme280.h
  * @brief Sensor driver for BME280 sensor
@@ -42,8 +42,11 @@
 
 /*!
  * @defgroup bme280 BME280
- * @brief <a href="https://www.bosch-sensortec.com/bst/products/all_products/bme280">Product Overview</a>
- * and  <a href="https://github.com/BoschSensortec/BME280_driver">Sensor API Source Code</a>
+ * @brief <a
+ * href="https://www.bosch-sensortec.com/bst/products/all_products/bme280">Product
+ * Overview</a> and  <a
+ * href="https://github.com/BoschSensortec/BME280_driver">Sensor API Source
+ * Code</a>
  */
 
 #ifndef BME2_H_
@@ -82,7 +85,7 @@ extern "C" {
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_init(struct bme280_dev *dev);
+int8_t bme280_init(struct bme280_dev* dev);
 
 /**
  * \ingroup bme280
@@ -94,8 +97,8 @@ int8_t bme280_init(struct bme280_dev *dev);
  * \ingroup bme280ApiRegister
  * \page bme280_api_bme280_set_regs bme280_set_regs
  * \code
- * int8_t bme280_set_regs(const uint8_t reg_addr, const uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_set_regs(const uint8_t reg_addr, const uint8_t *reg_data,
+ * uint8_t len, struct bme280_dev *dev); \endcode
  * @details This API writes the given data to the register address of the sensor
  *
  * @param[in] reg_addr : Register addresses to where the data is to be written
@@ -111,14 +114,17 @@ int8_t bme280_init(struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
+int8_t bme280_set_regs(uint8_t* reg_addr,
+                       const uint8_t* reg_data,
+                       uint8_t len,
+                       struct bme280_dev* dev);
 
 /*!
  * \ingroup bme280ApiRegister
  * \page bme280_api_bme280_get_regs bme280_get_regs
  * \code
- * int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint8_t len, struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint8_t len,
+ * struct bme280_dev *dev); \endcode
  * @details This API reads the data from the given register address of sensor.
  *
  * @param[in] reg_addr  : Register address from where the data to be read
@@ -133,7 +139,7 @@ int8_t bme280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct bme280_dev *dev);
+int8_t bme280_get_regs(uint8_t reg_addr, uint8_t* reg_data, uint16_t len, struct bme280_dev* dev);
 
 /**
  * \ingroup bme280
@@ -145,8 +151,8 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct
  * \ingroup bme280ApiSensorSettings
  * \page bme280_api_bme280_set_sensor_settings bme280_set_sensor_settings
  * \code
- * int8_t bme280_set_sensor_settings(uint8_t desired_settings, const struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_set_sensor_settings(uint8_t desired_settings, const struct
+ * bme280_dev *dev); \endcode
  * @details This API sets the oversampling, filter and standby duration
  * (normal mode) settings in the sensor.
  *
@@ -173,7 +179,7 @@ int8_t bme280_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint16_t len, struct
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_set_sensor_settings(uint8_t desired_settings, struct bme280_dev *dev);
+int8_t bme280_set_sensor_settings(uint8_t desired_settings, struct bme280_dev* dev);
 
 /*!
  * \ingroup bme280ApiSensorSettings
@@ -193,7 +199,7 @@ int8_t bme280_set_sensor_settings(uint8_t desired_settings, struct bme280_dev *d
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
+int8_t bme280_get_sensor_settings(struct bme280_dev* dev);
 
 /**
  * \ingroup bme280
@@ -205,8 +211,8 @@ int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
  * \ingroup bme280ApiSensorMode
  * \page bme280_api_bme280_set_sensor_mode bme280_set_sensor_mode
  * \code
- * int8_t bme280_set_sensor_mode(uint8_t sensor_mode, const struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_set_sensor_mode(uint8_t sensor_mode, const struct bme280_dev
+ * *dev); \endcode
  * @details This API sets the power mode of the sensor.
  *
  * @param[in] dev : Structure instance of bme280_dev.
@@ -225,14 +231,14 @@ int8_t bme280_get_sensor_settings(struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_set_sensor_mode(uint8_t sensor_mode, struct bme280_dev *dev);
+int8_t bme280_set_sensor_mode(uint8_t sensor_mode, struct bme280_dev* dev);
 
 /*!
  * \ingroup bme280ApiSensorMode
  * \page bme280_api_bme280_get_sensor_mode bme280_get_sensor_mode
  * \code
- * int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, const struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, const struct bme280_dev
+ * *dev); \endcode
  * @details This API gets the power mode of the sensor.
  *
  * @param[in] dev : Structure instance of bme280_dev.
@@ -251,7 +257,7 @@ int8_t bme280_set_sensor_mode(uint8_t sensor_mode, struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, struct bme280_dev *dev);
+int8_t bme280_get_sensor_mode(uint8_t* sensor_mode, struct bme280_dev* dev);
 
 /**
  * \ingroup bme280
@@ -276,7 +282,7 @@ int8_t bme280_get_sensor_mode(uint8_t *sensor_mode, struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_soft_reset(struct bme280_dev *dev);
+int8_t bme280_soft_reset(struct bme280_dev* dev);
 
 /**
  * \ingroup bme280
@@ -288,8 +294,8 @@ int8_t bme280_soft_reset(struct bme280_dev *dev);
  * \ingroup bme280ApiSensorData
  * \page bme280_api_bme280_get_sensor_data bme280_get_sensor_data
  * \code
- * int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev);
- * \endcode
+ * int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data
+ * *comp_data, struct bme280_dev *dev); \endcode
  * @details This API reads the pressure, temperature and humidity data from the
  * sensor, compensates the data and store it in the bme280_data structure
  * instance passed by the user.
@@ -314,14 +320,16 @@ int8_t bme280_soft_reset(struct bme280_dev *dev);
  * @retval < 0 -> Fail.
  *
  */
-int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data, struct bme280_dev *dev);
+int8_t bme280_get_sensor_data(uint8_t sensor_comp,
+                              struct bme280_data* comp_data,
+                              struct bme280_dev* dev);
 
 /*!
  * \ingroup bme280ApiSensorData
  * \page bme280_api_bme280_parse_sensor_data bme280_parse_sensor_data
  * \code
- * void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
- * \endcode
+ * void bme280_parse_sensor_data(const uint8_t *reg_data, struct
+ * bme280_uncomp_data *uncomp_data); \endcode
  *  @details This API is used to parse the pressure, temperature and
  *  humidity data and store it in the bme280_uncomp_data structure instance.
  *
@@ -330,7 +338,7 @@ int8_t bme280_get_sensor_data(uint8_t sensor_comp, struct bme280_data *comp_data
  *  and humidity data.
  *
  */
-void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data *uncomp_data);
+void bme280_parse_sensor_data(const uint8_t* reg_data, struct bme280_uncomp_data* uncomp_data);
 
 /*!
  * \ingroup bme280ApiSensorData
@@ -361,9 +369,9 @@ void bme280_parse_sensor_data(const uint8_t *reg_data, struct bme280_uncomp_data
  *
  */
 int8_t bme280_compensate_data(uint8_t sensor_comp,
-                              const struct bme280_uncomp_data *uncomp_data,
-                              struct bme280_data *comp_data,
-                              struct bme280_calib_data *calib_data);
+                              const struct bme280_uncomp_data* uncomp_data,
+                              struct bme280_data* comp_data,
+                              struct bme280_calib_data* calib_data);
 
 /**
  * \ingroup bme280
@@ -377,16 +385,17 @@ int8_t bme280_compensate_data(uint8_t sensor_comp,
  * \code
  * uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings);
  * \endcode
- * @brief This API is used to calculate the maximum delay in milliseconds required for the
- * temperature/pressure/humidity(which ever are enabled) measurement to complete.
- * The delay depends upon the number of sensors enabled and their oversampling configuration.
+ * @brief This API is used to calculate the maximum delay in milliseconds
+ * required for the temperature/pressure/humidity(which ever are enabled)
+ * measurement to complete. The delay depends upon the number of sensors enabled
+ * and their oversampling configuration.
  *
  * @param[in] settings : contains the oversampling configurations.
  *
  * @return delay required in milliseconds.
  *
  */
-uint32_t bme280_cal_meas_delay(const struct bme280_settings *settings);
+uint32_t bme280_cal_meas_delay(const struct bme280_settings* settings);
 
 #ifdef __cplusplus
 }

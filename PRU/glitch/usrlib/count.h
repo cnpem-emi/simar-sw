@@ -4,12 +4,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-int8_t count_pru(uint32_t time_base, uint32_t *data);
+int8_t count_pru(uint32_t time_base, uint32_t* data);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
-
