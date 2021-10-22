@@ -1,5 +1,7 @@
 # SIMAR Software
 
+[![Build](https://github.com/cnpem-iot/simar-software/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/cnpem-iot/simar-software/actions/workflows/c-cpp.yml)
+
 SIMAR is an easily deployable intelligent platform for extensive monitoring and remote actuation of electrical systems and environment data, such as temperature, humidity, voltage, power factor and current. 
 
 ## Communication
