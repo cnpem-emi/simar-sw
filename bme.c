@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
   double pressure_delta = 0;
 
-  reply_remote = redisCommand(c_remote, "GET pressure_B15");
+  reply_remote = redisCommand(c_remote, "GET B15_pressure");
 
   if (reply_remote->str) {
     double external_pressure = atof(reply_remote->str);
@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
       nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
     }
 
-    reply_remote = (redisReply*)redisCommand(c_remote, "GET B15_pressure");
+    reply_remote = (redisReply*)redisCommand(c_remote, "GET pressure_B15");
 
     if (reply_remote->str) {
       reply = (redisReply*)redisCommand(c, "SET last_ext_pressure %s", reply_remote->str);
