@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
       for (int j = 0; j < WINDOW_SIZE; j++) {
         bme_read(&sensors[i].dev, &sensors[i].data);
 
-        if (check_alteration(sensors[i])) {
+        if (sensors[i].data.pressure > 800 && sensors[i].data.pressure < 1000) {
           sensors[i].window[j] = sensors[i].past_pres = sensors[i].data.pressure;
         } else {
           --j;
