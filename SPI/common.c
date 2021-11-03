@@ -217,9 +217,9 @@ int select_module(int address, int module) {
 }
 
 /**
- * @brief Selects module at given address
- * @param[in] address Address
- * @param[in] module Module value
+ * @brief Writes data directly to SPI (module selection)
+ * @param[in] address Data
+ * @param[in] len Length of data
  * @returns SPI transfer operation result
  * @retval 0 Success
  * @retval 1 Failure
