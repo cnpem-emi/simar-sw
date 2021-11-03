@@ -5,7 +5,7 @@ SHELL = /bin/sh
 build: init_bme
 
 init_volt: /usr/local/lib/libhiredis.so volt.c spiutil.o
-	gcc spiutil.o volt.c -o init_volt -lhiredis -lpthread -Wall -O2
+	gcc spiutil.o volt.c -o init_volt -lhiredis -lpthread -Wall -O2 -g
 
 init_bme: /usr/local/lib/libhiredis.so bme_commons.o bme2.o bme.c i2cutil.o spiutil.o
 	gcc spiutil.o bme2.o bme_commons.o i2cutil.o bme.c -o init_bme -lhiredis -Wall -O2

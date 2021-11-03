@@ -208,12 +208,24 @@ int select_module(int address, int module) {
   unsigned long msg;
   int parity = calculate_parity(address);
 
-  msg = (parity << 5) | address;
-  msg = (msg << 2) | module;
+  msg = (parity << 4) | address;
+  msg = (msg << 3) | module;
 
-  char msg_c[1] = {module};
+  char msg_c[1] = {msg};
 
   return spi_mod_comm(msg_c, msg_c, 1);
+}
+
+/**
+ * @brief Selects module at given address
+ * @param[in] address Address
+ * @param[in] module Module value
+ * @returns SPI transfer operation result
+ * @retval 0 Success
+ * @retval 1 Failure
+ */
+int transfer_module(char* data, int len) {
+  return spi_mod_comm(data, data, len);
 }
 
 /**
