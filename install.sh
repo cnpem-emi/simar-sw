@@ -8,12 +8,12 @@ fi
 
 read -p "🌐 Is this installation wired? [y/n] [default: y] " I_TYPE
 
-if [ $I_TYPE = "y" ] || [ $I_TYPE = "" ]
+if [[ $I_TYPE = "y" ]] || [[ $I_TYPE = "" ]]
 then
     read -p "Name your sensors (space separated): [optional]" SENSOR_NAMES 
     sed -i "s/\/root\/simar-software\/init_bme.*/\/root\/simar-software\/init_bme ${SENSOR_NAMES}/g" Autostart/simar_startup.sh
     make && make install
-elif [ $I_TYPE = "n" ]
+elif [[ $I_TYPE = "n" ]]
 then
     ./Autostart/wifi.sh
 else
