@@ -114,6 +114,7 @@ uint32_t bbb_mmio_input(gpio_t gpio);
 int bbb_mmio_get_gpio(gpio_t* gpio);
 void delay_mili(uint32_t ms);
 int select_module(int address, int module);
+int transfer_module(char* data, int len);
 int write_data(int address, char* data, int len);
 int read_data(int address, char* rx);
 
