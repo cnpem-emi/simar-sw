@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!found_loc)
-      strlcpy(filename, "", 512);
+      strncpy(filename, "", 512);
     rewinddir(dr);
 
     bme_read(&sensor.dev, &sensor.data);
