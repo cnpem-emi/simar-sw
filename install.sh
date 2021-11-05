@@ -15,7 +15,9 @@ then
     make && make install
 elif [[ $I_TYPE = "n" ]]
 then
-    ./Autostart/wifi.sh
+    cd Autostart
+    ./wifi.sh
+    make -C .. init_wireless && make -C .. install_wireless
 else
     echo "🛑 Invalid option!"
     exit

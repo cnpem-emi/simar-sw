@@ -25,8 +25,3 @@ network={
 EOF
 
 cp wpa_supplicant.service /etc/systemd/system/wpa_supplicant.service
-systemctl daemon-reload
-systemctl start wpa_supplicant
-systemctl enable wpa_supplicant
-
-make -C .. && make -C .. install
