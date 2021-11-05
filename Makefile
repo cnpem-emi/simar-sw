@@ -68,7 +68,7 @@ install:
 	systemctl enable simar_sensors
 
 install_wireless:
-	sed -i -e 'c57/root/simar-software/init_wireless'
+	sed -i -e '57c/root/simar-software/init_wireless' ./Autostart/simar_startup.sh
 	cp ./Autostart/simar_sensors.service /etc/systemd/system/.
 	cp ./Autostart/simar_log_conf /etc/logrotate.d/simar
 	cp ./Autostart/99-local.rules /etc/udev/rules.d/99-local.rules
