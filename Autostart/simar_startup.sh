@@ -55,4 +55,4 @@ else
 fi
 
 /root/simar-software/init_bme
-#/root/spi-utils/init_wireless
+#/root/simar-software/init_wireless
