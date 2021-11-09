@@ -15,17 +15,43 @@ const char servers[3][11] = {"10.0.38.46", "10.0.38.59", "10.0.38.42"};
 gpio_t led = {.pin = USR_3};
 int8_t sensor_number = -1;
 
+uint8_t redis_connect() {
+  int server_i = 0;
+  do {
+    c = redisConnectWithTimeout(servers[server_i], 6379, (struct timeval){1, 500000});
+
+    if (c->err) {
+      if (server_i == 2) {
+        syslog(LOG_ERR, "No remote Redis server instance found");
+        return 0;
+      }
+
+      syslog(LOG_ERR, "%s remote Redis server not available, switching...\n", servers[server_i++]);
+    }
+  } while (c->err);
+  return 1;
+}
+
 void* blink_led() {
   const struct timespec blink_delay = {0, 250000000L};
-  const struct timespec blink_period = {0, 750000000L};
-  while (1) {
-    for (int i = 0; i < sensor_number; i++) {
+  if (sensor_number == 99) {
+    const struct timespec blink_period = {10, 0};
+    for (;;) {
       bbb_mmio_set_high(led);
-      nanosleep(&blink_delay, NULL);
-      bbb_mmio_set_low(led);
-      nanosleep(&blink_delay, NULL);
+      nanosleep(&blink_period, NULL);
+      //nanosl
     }
-    nanosleep(&blink_period, NULL);
+  } else {
+    const struct timespec blink_period = {0, 750000000L};
+    for (;;) {
+      for (int i = 0; i < sensor_number; i++) {
+        bbb_mmio_set_high(led);
+        nanosleep(&blink_delay, NULL);
+        bbb_mmio_set_low(led);
+        nanosleep(&blink_delay, NULL);
+      }
+      nanosleep(&blink_period, NULL);
+    }
   }
 }
 
@@ -71,71 +97,62 @@ int main(int argc, char* argv[]) {
     return -2;
   }
 
-  int server_i = 0;
+  for (int i = 0; i < 20; i++) {
+      local_c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
+      if (!local_c->err)
+        break;
 
-  do {
-    c = redisConnectWithTimeout(servers[server_i], 6379, (struct timeval){1, 500000});
-
-    if (c->err) {
-      if (server_i == 2) {
-        syslog(LOG_ERR, "No remote Redis server instance found");
-        return -3;
-      }
-
-      syslog(LOG_ERR, "%s remote Redis server not available, switching...\n", servers[server_i++]);
+      sensor.dev.delay_us(500000, NULL);
     }
 
-  } while (c->err);
+    if (local_c->err) {
+      syslog(LOG_CRIT, "Could not find a local Redis server");
+      return -2;
+   }
 
-  redisSetTimeout(c, (struct timeval){1, 500000});
+  if (redis_connect()) {
+    redisSetTimeout(c, (struct timeval){1, 500000});
 
-  syslog(LOG_NOTICE, "Redis DB connected");
+   reply = (redisReply*)redisCommand(local_c, "HGET device simar_gia");
 
-  for (int i = 0; i < 20; i++) {
-    local_c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
-    if (!local_c->err)
-      break;
+      if (reply->str) {
+        int sensor_preassigned = atoi(reply->str);
 
-    sensor.dev.delay_us(500000, NULL);
-  }
-
-  if (local_c->err)
-    syslog(LOG_CRIT, "Could not find a local Redis server");
-  reply = (redisReply*)redisCommand(local_c, "HGET device simar_gia");
-
-  if (reply->str) {
-    int sensor_preassigned = atoi(reply->str);
-
-    freeReplyObject(reply);
-    reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", sensor_preassigned);
-
-    if (!reply->str && sensor_preassigned < 9)
-      sensor_number = sensor_preassigned;
-    else
-      syslog(LOG_NOTICE, "Preassigned SIMAR ID was not available, resorting to available ID");
-  }
-  freeReplyObject(reply);
-
-  if (sensor_number == -1) {
-    for (int i = 1; i < 9; i++) {
-      reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", i);
-      if (!reply->str) {
-        sensor_number = i;
         freeReplyObject(reply);
-        break;
+        reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", sensor_preassigned);
+
+        if (!reply->str && sensor_preassigned < 9)
+          sensor_number = sensor_preassigned;
+        else
+          syslog(LOG_NOTICE, "Preassigned SIMAR ID was not available, resorting to available ID");
       }
       freeReplyObject(reply);
-    }
+    
 
     if (sensor_number == -1) {
-      syslog(LOG_CRIT, "Sensor could not be allocated a variable");
-      exit(-3);
-    }
-  }
+      for (int i = 1; i < 9; i++) {
+        reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", i);
+        if (!reply->str) {
+          sensor_number = i;
+          freeReplyObject(reply);
+          break;
+        }
+        freeReplyObject(reply);
+      }
 
-  syslog(LOG_NOTICE, "Sensor connected, utilizing id %d", sensor_number);
-  reply = (redisReply*)redisCommand(local_c, "HSET device simar_gia %d", sensor_number);
-  freeReplyObject(reply);
+      if (sensor_number == -1) {
+        syslog(LOG_CRIT, "Sensor could not be allocated a variable");
+        exit(-3);
+      }
+    }
+    syslog(LOG_NOTICE, "Redis DB connected");
+
+    syslog(LOG_NOTICE, "Sensor connected, utilizing id %d", sensor_number);
+    reply = (redisReply*)redisCommand(local_c, "HSET device simar_gia %d", sensor_number);
+    freeReplyObject(reply);
+  } else {
+    sensor_number = 99;
+  }
 
   reply = (redisReply*)redisCommand(local_c, "SET retries 0");
   freeReplyObject(reply);
@@ -184,8 +201,11 @@ int main(int argc, char* argv[]) {
     }
 
     if (!found_loc)
-      strncpy(filename, "", 512);
+      strcpy(filename, "");
     rewinddir(dr);
+
+    if (sensor_number == 99 && redis_connect())
+      return 0;
 
     bme_read(&sensor.dev, &sensor.data);
     if (check_alteration(sensor)) {
@@ -193,7 +213,7 @@ int main(int argc, char* argv[]) {
                                         sensor.data.temperature);
 
       if (reply == NULL)
-        return -2;
+        continue;
       freeReplyObject(reply);
 
       reply = (redisReply*)redisCommand(c, "SET wgen%d_%s %.3f EX 5", sensor_number, "pressure",

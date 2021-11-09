@@ -11,7 +11,7 @@ init_bme: /usr/local/lib/libhiredis.so bme_commons.o bme2.o bme.c i2cutil.o spiu
 	gcc spiutil.o bme2.o bme_commons.o i2cutil.o bme.c -o init_bme -lhiredis -Wall -O2
 
 init_wireless: /usr/local/lib/libhiredis.so bme_commons.o bme2.o wireless.c i2cutil.o spiutil.o
-	gcc spiutil.o bme2.o bme_commons.o i2cutil.o wireless.c -o init_wireless -lhiredis -Wall -lpthread -O3
+	gcc spiutil.o bme2.o bme_commons.o i2cutil.o wireless.c -o init_wireless -lhiredis -Wall -lpthread -O3 -g
 
 single_bme: /usr/local/lib/libhiredis.so bme_commons.o bme2.o i2cutil.o spiutil.o BME280/single_bme.c
 	gcc spiutil.o bme2.o i2cutil.o bme_commons.o BME280/single_bme.c -o init_bme -lhiredis -Wall
@@ -68,7 +68,7 @@ install:
 	systemctl enable simar_sensors
 
 install_wireless:
-	sed -i -e '57c/root/simar-software/init_wireless' ./Autostart/simar_startup.sh
+	sed -i -e '57c/root/simar-software/init_wireless' ./Autostart/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./Autostart/simar_startup.sh
 	cp ./Autostart/simar_sensors.service /etc/systemd/system/.
 	cp ./Autostart/simar_log_conf /etc/logrotate.d/simar
 	cp ./Autostart/99-local.rules /etc/udev/rules.d/99-local.rules
