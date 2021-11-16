@@ -2,7 +2,6 @@
 #include <pru_intc.h>
 #include <pru_rpmsg.h>
 #include <pru_cfg.h>
-#include <pru_intc.h>
 #include <rsc_types.h>
 #include "resource_table.h"
 #include "intc_map_1.h"
