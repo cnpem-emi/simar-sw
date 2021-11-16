@@ -6,14 +6,14 @@ SIMAR is an easily deployable intelligent platform for extensive monitoring and 
 
 ## Communication
 
-Protocols that are confirmed working in BBB kernel version >=5.10 with the additional boards:
+Protocols that are confirmed working in BBB kernel version >=4.14 with the additional boards:
 - [x] UART
 - [x] I2C
 - [x] SPI
 - [x] OneWire
 - [x] Analog (ADC/DAC)
 
-Features that are only available in the TI kernel:
+Features that are only available in the TI kernel >=5.10:
 - [x] PRU communication (used for glitch detection/power factor)
 
 Works better with Debian 10 or later
