@@ -112,7 +112,7 @@ int8_t check_alteration(struct sensor_data sensor) {
 }
 
 int main(int argc, char* argv[]) {
-  openlog("simar_bme", 0, LOG_LOCAL0);
+  openlog("simar", 0, LOG_LOCAL0);
 
   if (!--argc)
     syslog(LOG_INFO, "You should consider using at least one custom name");

@@ -1,0 +1,15 @@
+[Unit]
+Description=SIMAR electricity sensors service
+
+Wants=netowrk.target
+After=syslog.target multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/root/simar-software/Autostart/simar_volt.sh
+Restart=on-failure
+RestartSec=10
+KillMode=control-group
+
+[Install]
+WantedBy=graphical.target
