@@ -26,12 +26,12 @@ Run `./install.sh` and follow the onscreen instructions. Or:
 
 ### Temperature/Pressure/Humidity/Door
 ``` 
-make init_bme
+make bme
 ```
 
 ### Temperature/Pressure/Humidity (Plug-and-play, single sensor)
 ``` 
-make init_wireless
+make wireless
 ```
 
 ### Wired connection
@@ -47,7 +47,7 @@ make install_wireless
 ### Voltage/Current/Power Factor/Remote Actuation/Glitches/Frequency
 *Requires kernel 5.10 or later*
 ```
-make init_volt
+make volt
 make install_volt
 ```
 

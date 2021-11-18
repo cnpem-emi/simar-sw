@@ -11,14 +11,14 @@ PROGS = $(patsubst %.c,%,$(SRCS))
 
 build: bme volt
 
-volt: /usr/local/lib/libhiredis.so volt.c spiutil.o
-	$(COMPILE.c) spiutil.o volt.c -lhiredis -lpthread -fno-trapping-math -o $@
+volt: /usr/local/lib/libhiredis.so volt.c spi/common 
+	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@
 
 bme: /usr/local/lib/libhiredis.so $(PROGS)
-	$(COMPILE.c) $^ bme.c -o $@ -lhiredis
+	$(COMPILE.c) $^ bme.c -o $@
 
 wireless: /usr/local/lib/libhiredis.so $(PROGS)
-	$(COMPILE.c) $^ wireless.c -o $@ -lhiredis -lpthread 
+	$(COMPILE.c) $^ wireless.c -o $@ -lpthread 
 
 %: %.c
 	$(COMPILE.c) -c $< -o $@
