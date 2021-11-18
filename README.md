@@ -24,12 +24,12 @@ Works better with Debian 10 or later
 
 Run `./install.sh` and follow the onscreen instructions. Or:
 
-### BME280
+### Temperature/Pressure/Humidity/Door
 ``` 
 make init_bme
 ```
 
-### BME280 (Plug-and-play, no door mode)
+### Temperature/Pressure/Humidity (Plug-and-play, single sensor)
 ``` 
 make init_wireless
 ```
@@ -44,12 +44,13 @@ make install
 make install_wireless
 ```
 
-NOTE: This option requires user input
-
-### Voltage/Current/Actuation
+### Voltage/Current/Power Factor/Remote Actuation/Glitches/Frequency
+*Requires kernel 5.10 or later*
 ```
 make init_volt
+make install_volt
 ```
+
 
 ## Important notes
 - If SPI isn't working, check the bus before anything else. Depending on your board, the first bus might be either 1.0 or 0.0
