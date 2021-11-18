@@ -50,7 +50,7 @@ install_volt:
 	systemctl enable simar_volt
 
 install_wireless:
-	sed -i -e '57c/root/simar-software/init_wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
+	sed -i -e '57c/root/simar-software/wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
 	cp ./start/simar_sensors.service /etc/systemd/system/.
 	cp ./start/simar_log_conf /etc/logrotate.d/simar
 	cp ./start/99-local.rules /etc/udev/rules.d/99-local.rules
