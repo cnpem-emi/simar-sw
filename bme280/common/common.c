@@ -3,8 +3,8 @@
 
 #include "common.h"
 
-uint8_t fd_76 = 0;
-uint8_t fd_77 = 0;
+int8_t fd_76 = 0;
+int8_t fd_77 = 0;
 
 int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
   int8_t rslt = BME280_OK;
@@ -15,7 +15,7 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
     exit(1);
   }
 
-  uint8_t* fd = addr == 0x76 ? &fd_76 : &fd_77;
+  int8_t* fd = addr == 0x76 ? &fd_76 : &fd_77;
 
   if (i2c_open(fd, addr)) {
     syslog(LOG_CRIT, "Failed to open bus");

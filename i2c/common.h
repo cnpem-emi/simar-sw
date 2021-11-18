@@ -8,7 +8,7 @@ extern "C" {
 #define WINDOW_SIZE 5
 #define MAX_NAME_LEN 16
 
-#include "../SPI/common.h"
+#include "../spi/common.h"
 
 struct identifier {
   /*! Demux channel */

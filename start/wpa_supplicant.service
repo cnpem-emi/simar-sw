@@ -7,7 +7,7 @@ Wants=network.target
 [Service]
 Type=dbus
 BusName=fi.w1.wpa_supplicant1
-ExecStart=/root/simar-software/Autostart/simar_wireless.sh
+ExecStart=/root/simar-software/start/simar_wireless.sh
 Restart=always
 RestartSec=30
 

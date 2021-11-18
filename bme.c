@@ -5,7 +5,7 @@
 #include <syslog.h>
 #include <time.h>
 
-#include "BME280/common/common.h"
+#include "bme280/common/common.h"
 
 const char servers[1][11] = {"10.15.0.254"};
 

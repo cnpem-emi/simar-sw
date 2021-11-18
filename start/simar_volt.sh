@@ -25,4 +25,4 @@ config-pin P8_43 pruin
 #done
 
 echo Initializing power script...
-/root/simar-software/init_volt
+/root/simar-software/volt

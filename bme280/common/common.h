@@ -1,7 +1,7 @@
 #ifndef BME_COMMON_H
 #define BME_COMMON_H
 
-#include "../../I2C/common.h"
+#include "../../i2c/common.h"
 #include "../bme2.h"
 
 #define WINDOW_SIZE 5

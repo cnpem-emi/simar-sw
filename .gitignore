@@ -16,5 +16,7 @@ ds
 bda
 dump.rdb
 init*
-teste
+volt
+bme
+wireless
 *.o

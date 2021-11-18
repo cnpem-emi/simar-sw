@@ -7,7 +7,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
-#include "SPI/common.h"
+#include "spi/common.h"
 
 #define OUTLET_QUANTITY 8
 #define RESOLUTION 0.01953125
@@ -15,7 +15,7 @@
 #define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
 #define PRU1_DEVICE_NAME "/dev/rpmsg_pru31"
 
-const struct timespec* period = (const struct timespec[]){{1, 0}};
+const struct timespec* period = (const struct timespec[]){{2, 0}};
 
 const char servers[11][16] = {
     "10.0.38.59",    "10.0.38.46",    "10.0.38.42",    "10.128.153.81",
@@ -206,10 +206,20 @@ void* glitch_counter() {
 
   for (;;) {
     write(prufd.fd, "-", 1);
-    usleep(5999600);  // There is a 400 us offset, we're aiming for 60s
+    usleep(9600);
     write(prufd.fd, "-", 1);
 
+    printf("AAAAAA\n");
+
     if (read(prufd.fd, buf, 512)) {
+      for(int i = 0; i < 16; i++) {
+          printf("%x ", buf[i]);
+      }
+      double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
+      double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
+      double duty = duty_up/(duty_up+duty_down);
+
+      printf(" DUTY UP: %.3f DUTY DOWN: %.3f DUTY TOTAL: %.3f\n", duty_up, duty_down, duty);
       reply = redisCommand(c, "SET glitch_count %d",
                            (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]);
       freeReplyObject(reply);
@@ -217,6 +227,7 @@ void* glitch_counter() {
       reply = redisCommand(c, "SET frequency %d",
                            (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4]);
       freeReplyObject(reply);
+      read(prufd.fd, buf, 16);
     }
     nanosleep(period, NULL);
   }

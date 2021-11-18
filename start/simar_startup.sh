@@ -19,4 +19,4 @@ else
 fi
 
 echo Initializing BME script...
-/root/simar-software/init_bme
+/root/simar-software/bme

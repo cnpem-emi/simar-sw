@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <pru_intc.h>
 #include <pru_rpmsg.h>
+#include <pru_cfg.h>
 #include "resource_table.h"
 #include "intc_map_1.h"
 
@@ -38,7 +39,7 @@ void main(void) {
   struct pru_rpmsg_transport transport;
   uint16_t src, dst, len;
   volatile uint8_t* status;
-  uint32_t data[2];
+  uint32_t data[4];
 
   CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
   // Clear the status of the PRU-ICSS system event that the ARM will use to
@@ -64,7 +65,7 @@ void main(void) {
       CT_INTC.SICR_bit.STS_CLR_IDX = FROM_ARM_HOST;
       while (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
         asm_count(&data);
-        pru_rpmsg_send(&transport, dst, src, data, 8);
+        pru_rpmsg_send(&transport, dst, src, data, 16);
       }
     }
   }

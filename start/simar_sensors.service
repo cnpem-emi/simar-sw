@@ -6,7 +6,7 @@ After=syslog.target network-online.target
 
 [Service]
 Type=simple
-ExecStart=/root/simar-software/Autostart/simar_startup.sh
+ExecStart=/root/simar-software/start/simar_startup.sh
 Restart=on-failure
 RestartSec=10
 KillMode=control-group
