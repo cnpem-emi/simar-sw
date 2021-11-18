@@ -7,8 +7,8 @@
 #include <syslog.h>
 #include <time.h>
 
-#include "BME280/common/common.h"
-#include "SPI/common.h"
+#include "bme280/common/common.h"
+#include "spi/common.h"
 
 redisContext *c, *local_c;
 const char servers[3][11] = {"10.0.38.46", "10.0.38.59", "10.0.38.42"};
