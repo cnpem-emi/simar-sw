@@ -53,7 +53,7 @@ ret_loop:
 end_count:
 	SBBO		&COUNT1, r14, 0, 4		; Copy pulse count to PRU memory
 	SBBO		&COUNT2, r14, 4, 4
-	SBBO		&CYCLE_SET, r14, 8, 4	; Copy duty cycle data to PRU memory
+	SBBO		&CYCLE_SET, r14, 8, 4		; Copy duty cycle data to PRU memory
 	SBBO		&CYCLE_CLEAR, r14, 12, 4
 	JMP         	r3.w2
 
