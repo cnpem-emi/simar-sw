@@ -1,4 +1,4 @@
-; PRU1 - Glitch, power factor and frequency
+; PRU1 - Glitch and frequency
 
 	.define r16, 		COUNT1
 	.define r30.t3,		OUT1			; P8_44 - Glitch
@@ -19,32 +19,41 @@ asm_count:
 
 count1:
 	QBBC		count2, r31.b0, 2		; P8_43 - Glitch
-	ADD			COUNT1, COUNT1, 1
-	SET			OUT1
-	NOP
+	ADD		COUNT1, COUNT1, 1
+	SET		OUT1
+	NOP						; Compensates for janky signals
+	NOP						; I'm not using JAL because we'd end up at 3 instructions
 
 count2:
-	CLR			OUT1
+	CLR		OUT1
+	NOP
+	NOP
 	QBBC		cycle_up, r31.b0, 0		; P8_45 - Frequency
-	ADD			COUNT2, COUNT2, 1
-	SET			OUT2
+	ADD		COUNT2, COUNT2, 1
+	SET		OUT2
+	NOP						; This is just about as fast as we can go
+	NOP
 	NOP
 
 cycle_up:
-	CLR			OUT2
+	CLR		OUT2
+	NOP
+	NOP
+	NOP
 	QBBC		cycle_down, r31.b0, 4	; P8_41 - Power factor
-	ADD			CYCLE_SET, CYCLE_SET, 1
-	JMP			ret_loop
+	ADD		CYCLE_SET, CYCLE_SET, 1
+	JMP		ret_loop
 
 cycle_down:
-	ADD			CYCLE_CLEAR, CYCLE_CLEAR, 1
+	ADD		CYCLE_CLEAR, CYCLE_CLEAR, 1
 
 ret_loop:
 	QBBC   		count1, r31, 31			; If kick bit is set (message received), return
 
 end_count:
-	SBBO		&COUNT1, r14, 0, 4
-	SBBO		&COUNT2, r14, 4, 4		; Copy pulse count to PRU memory
-	SBBO		&CYCLE_SET, r14, 8, 4
+	SBBO		&COUNT1, r14, 0, 4		; Copy pulse count to PRU memory
+	SBBO		&COUNT2, r14, 4, 4
+	SBBO		&CYCLE_SET, r14, 8, 4		; Copy duty cycle data to PRU memory
 	SBBO		&CYCLE_CLEAR, r14, 12, 4
-	JMP         r3.w2
+	JMP         	r3.w2
+
