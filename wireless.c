@@ -39,7 +39,7 @@ void* blink_led() {
     for (;;) {
       bbb_mmio_set_high(led);
       nanosleep(&blink_period, NULL);
-      //nanosl
+      // nanosl
     }
   } else {
     const struct timespec blink_period = {0, 750000000L};
@@ -98,36 +98,35 @@ int main(int argc, char* argv[]) {
   }
 
   for (int i = 0; i < 20; i++) {
-      local_c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
-      if (!local_c->err)
-        break;
+    local_c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
+    if (!local_c->err)
+      break;
 
-      sensor.dev.delay_us(500000, NULL);
-    }
+    sensor.dev.delay_us(500000, NULL);
+  }
 
-    if (local_c->err) {
-      syslog(LOG_CRIT, "Could not find a local Redis server");
-      return -2;
-   }
+  if (local_c->err) {
+    syslog(LOG_CRIT, "Could not find a local Redis server");
+    return -2;
+  }
 
   if (redis_connect()) {
     redisSetTimeout(c, (struct timeval){1, 500000});
 
-   reply = (redisReply*)redisCommand(local_c, "HGET device simar_gia");
+    reply = (redisReply*)redisCommand(local_c, "HGET device simar_gia");
 
-      if (reply->str) {
-        int sensor_preassigned = atoi(reply->str);
+    if (reply->str) {
+      int sensor_preassigned = atoi(reply->str);
 
-        freeReplyObject(reply);
-        reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", sensor_preassigned);
-
-        if (!reply->str && sensor_preassigned < 9)
-          sensor_number = sensor_preassigned;
-        else
-          syslog(LOG_NOTICE, "Preassigned SIMAR ID was not available, resorting to available ID");
-      }
       freeReplyObject(reply);
-    
+      reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", sensor_preassigned);
+
+      if (!reply->str && sensor_preassigned < 9)
+        sensor_number = sensor_preassigned;
+      else
+        syslog(LOG_NOTICE, "Preassigned SIMAR ID was not available, resorting to available ID");
+    }
+    freeReplyObject(reply);
 
     if (sensor_number == -1) {
       for (int i = 1; i < 9; i++) {
@@ -205,7 +204,7 @@ int main(int argc, char* argv[]) {
     rewinddir(dr);
 
     if (sensor_number == 99 && redis_connect())
-      return 0;
+      return 1;
 
     bme_read(&sensor.dev, &sensor.data);
     if (check_alteration(sensor)) {
