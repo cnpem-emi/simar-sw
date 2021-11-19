@@ -20,5 +20,3 @@ network={
   key_mgmt=NONE
 }
 EOF
-
-cp wpa_supplicant.service /etc/systemd/system/wpa_supplicant.service
