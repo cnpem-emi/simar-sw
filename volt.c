@@ -15,8 +15,6 @@
 #define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
 #define PRU1_DEVICE_NAME "/dev/rpmsg_pru31"
 
-const struct timespec* period = (const struct timespec[]){{2, 0}};
-
 const char servers[11][16] = {
     "10.0.38.59",    "10.0.38.46",    "10.0.38.42",    "10.128.153.81",
     "10.128.153.82", "10.128.153.83", "10.128.153.84", "10.128.153.85",
@@ -26,6 +24,7 @@ const char servers[11][16] = {
 redisContext *c, *c_remote;
 char name[72];
 pthread_mutex_t spi_mutex;
+double duty = 1;
 
 void connect_local() {
   do {
@@ -72,6 +71,8 @@ void* command_listener() {
   uint8_t delay_name = 21;
   uint8_t n_names = 0;
   uint8_t command;
+
+  const struct timespec* period = (const struct timespec[]){{2, 0}};
 
   connect_remote();
   syslog(LOG_NOTICE, "Redis command DB connected");
@@ -158,40 +159,9 @@ void* command_listener() {
   }
 }
 
-/*void* pf_measure() {
-  struct pollfd pollfd;
-  uint8_t offset = 0;
-  uint32_t counts[4];
-
-  pollfd.fd = open(PRU1_DEVICE_NAME, O_RDWR);
-
-  if (pollfd.fd < 0) {
-    syslog(LOG_ERR, "Failed to communicate with PRU1");
-    for (;;) {
-    }
-    // exit(-9);
-  }
-
-  char buf[512];
-
-  for (;;) {
-    write(pollfd.fd, "-", 1);
-
-    if (read(pollfd.fd, buf, 512)) {
-      for (int i = 0; i < 2; i++) {
-        counts[i] = (buf[offset + 3] << 24) | (buf[offset + 2] << 16) | (buf[offset + 1] << 8) |
-                    buf[offset];
-        offset += 4;
-      }
-
-      printf("%.3f",
-      (double)counts[0]/((double)counts[1]+(double)counts[0]));
-    }
-  }
-}*/
-
 void* glitch_counter() {
   struct pollfd prufd;
+  const struct timespec* period = (const struct timespec[]){{0, 500000L}};
 
   prufd.fd = open(PRU1_DEVICE_NAME, O_RDWR);
   char buf[512];
@@ -206,26 +176,21 @@ void* glitch_counter() {
 
   for (;;) {
     write(prufd.fd, "-", 1);
-    usleep(9600);
+    usleep(4999600);
     write(prufd.fd, "-", 1);
 
-    printf("AAAAAA\n");
-
     if (read(prufd.fd, buf, 512)) {
-      for(int i = 0; i < 16; i++) {
-          printf("%x ", buf[i]);
-      }
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
-      double duty = duty_up/(duty_up+duty_down);
+      uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
+      duty = duty_up/(duty_up+duty_down);
 
-      printf(" DUTY UP: %.3f DUTY DOWN: %.3f DUTY TOTAL: %.3f\n", duty_up, duty_down, duty);
-      reply = redisCommand(c, "SET glitch_count %d",
+      reply = redisCommand(c, "SET glitch %d",
                            (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]);
       freeReplyObject(reply);
 
       reply = redisCommand(c, "SET frequency %d",
-                           (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4]);
+                           frequency/5);
       freeReplyObject(reply);
       read(prufd.fd, buf, 16);
     }
@@ -287,7 +252,7 @@ int main(int argc, char* argv[]) {
 
   pthread_mutex_unlock(&spi_mutex);
 
-  int i, j = 0;
+  uint8_t i, j = 0, low_current;
   struct timeval timeout = { 5, 0 };
   redisSetTimeout(c, timeout);
 
@@ -325,8 +290,19 @@ int main(int argc, char* argv[]) {
     if(reply == NULL) connect_local();
     freeReplyObject(reply);
 
-    reply = redisCommand(c, "SET ich_%d %.3f", 0, current[6]);
-    freeReplyObject(reply);
+    low_current = 1;
+
+    for(i = 0; i < 7; i++) {
+        reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
+        freeReplyObject(reply);
+
+        if(current[i] > 0.8) low_current = 0;
+    }
+
+    if(!low_current) {
+        reply = redisCommand(c, "SET pfactor %.3f", duty);
+        freeReplyObject(reply);
+    }
 
     nanosleep(inner_period, NULL);
   }
