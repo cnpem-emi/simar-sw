@@ -130,6 +130,12 @@ int main(int argc, char* argv[]) {
   uint8_t valid_i = 0;
 
   for (int i = 0; i < 8; i++) {
+    if (valid_i < argc && strcmp(argv[i + 1], "-") == 0) {
+         for(int j = i + 1; j <= argc - 1; j++) argv[j] = argv[j + 1];
+         argc--;
+         continue;
+    }
+
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
     sensor.id.mux_id = i % 4;
