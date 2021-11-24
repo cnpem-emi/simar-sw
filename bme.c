@@ -107,7 +107,7 @@ int8_t check_alteration(struct sensor_data sensor) {
   }
 
   return sensor.past_pres == 0 ||
-         (fabs(sensor.past_pres - sensor.data.pressure) < 2 && sensor.data.pressure > 800 &&
+         (fabs(sensor.past_pres - sensor.data.pressure) < 5 && sensor.data.pressure > 800 &&
           sensor.data.pressure < 1000 && sensor.data.humidity != 100);
 }
 
