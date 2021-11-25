@@ -178,6 +178,8 @@ void* glitch_counter() {
     write(prufd.fd, "-", 1);
 
     if (read(prufd.fd, buf, 512)) {
+      /*for(int i = 0; i < 16; i++) { printf("%x", buf[i]); }
+      printf("\n");*/
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
       uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
@@ -281,6 +283,7 @@ int main(int argc, char* argv[]) {
     low_current = 1;
 
     for(i = 0; i < 7; i++) {
+        if(current[i] > 100 || current[i] < -2) continue;
         reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
         freeReplyObject(reply);
 
@@ -289,6 +292,9 @@ int main(int argc, char* argv[]) {
 
     if(!low_current) {
         reply = redisCommand(c, "SET pfactor %.3f", duty);
+        freeReplyObject(reply);
+    } else {
+        reply = redisCommand(c, "SET pfactor %.3f", 1.0);
         freeReplyObject(reply);
     }
 
