@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
 
   double pressure_delta = 0;
 
-  reply_remote = redisCommand(c_remote, "GET B15_pressure");
+  reply_remote = redisCommand(c_remote, "GET B15_?");
 
   if (reply_remote->str) {
     double external_pressure = atof(reply_remote->str);
@@ -299,30 +299,30 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < valid_i; i++) {
       bme_read(&sensors[i].dev, &sensors[i].data);
       if (check_alteration(sensors[i])) {
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %.3f", "temperature", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "temperature",
                                           sensors[i].data.temperature);
         if (reply->integer)
           return DB_FAIL;
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %.3f", "pressure", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "pressure",
                                           sensors[i].data.pressure);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %.3f", "humidity", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "humidity",
                                           sensors[i].data.humidity);
         freeReplyObject(reply);
 
         update_open(&sensors[i]);
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %d", "open", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %d", sensors[i].name, "open",
                                           sensors[i].is_open);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %.3f", "avg", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "avg",
                                           sensors[i].average);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "SET %s_%s %.3f", "openavg", sensors[i].name,
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "openavg",
                                           sensors[i].open_average);
         freeReplyObject(reply);
 

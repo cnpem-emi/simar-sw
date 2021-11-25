@@ -7,18 +7,29 @@ COMPILE.c = $(CC) $(CFLAGS)
 SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c)
 PROGS = $(patsubst %.c,%,$(SRCS))
 
-.PHONY: all
+OUT = bin
 
-build: bme volt
+.PHONY: all directories clean
 
-volt: /usr/local/lib/libhiredis.so volt.c spi/common 
+build: directories $(OUT)/bme $(OUT)/volt $(OUT)/pru1.out
+
+directories: $(OUT)
+wireless: $(OUT)/wireless
+
+$(OUT):
+	mkdir -p $(OUT)
+
+$(OUT)/volt: /usr/local/lib/libhiredis.so volt.c spi/common 
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
-bme: /usr/local/lib/libhiredis.so $(PROGS)
+$(OUT)/bme: /usr/local/lib/libhiredis.so $(PROGS)
 	$(COMPILE.c) $^ bme.c -o $@ -lhiredis
 
-wireless: /usr/local/lib/libhiredis.so $(PROGS)
+$(OUT)/wireless: /usr/local/lib/libhiredis.so $(PROGS)
 	$(COMPILE.c) $^ wireless.c -o $@ -lpthread -lhiredis
+
+$(OUT)/pru1.out:
+	$(MAKE) -C pru
 
 %: %.c
 	$(COMPILE.c) -c $^ -o $@
@@ -35,19 +46,13 @@ install:
 	sed -i '/bind 127.0.0.1/c\bind 0.0.0.0' /etc/redis/*.conf
 	sed -i '/protected-mode yes/c\protected-mode no' /etc/redis/*.conf
 	cp ./start/services/simar_sensors.service /etc/systemd/system/.
+	cp ./start/services/simar_volt.service /etc/systemd/system/.
 	cp ./start/conf/simar_log_conf /etc/logrotate.d/simar
 	grep -qxF ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' /etc/rsyslog.conf || echo ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' >> /etc/rsyslog.conf
 	service rsyslog restart
 	systemctl daemon-reload
 	systemctl start simar_sensors
 	systemctl enable simar_sensors
-
-install_volt:
-	cp ./start/services/simar_volt.service /etc/systemd/system/.
-	service rsyslog restart
-	systemctl daemon-reload
-	systemctl start simar_volt
-	systemctl enable simar_volt
 
 install_wireless:
 	sed -i -e '57c/root/simar-software/wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
@@ -65,4 +70,4 @@ install_wireless:
 	systemctl enable simar_sensors
 
 clean:
-	rm -f $(PROGS) init*
+	rm -rf $(PROGS) $(OUT)

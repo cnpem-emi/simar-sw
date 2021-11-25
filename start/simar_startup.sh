@@ -15,15 +15,15 @@ config-pin p9_21 spi
 config-pin p9_22 spi_sclk
 
 # PRU firmware
-cp /root/simar-software/pru/pru*.out /lib/firmware/
+cp /root/simar-software/bin/pru*.out /lib/firmware/
 
-echo stop > /sys/class/remoteproc/remoteproc1/state
+#echo stop > /sys/class/remoteproc/remoteproc1/state
 echo stop > /sys/class/remoteproc/remoteproc2/state
 
-echo pru0.out > /sys/class/remoteproc/remoteproc1/firmware
+#echo pru0.out > /sys/class/remoteproc/remoteproc1/firmware
 echo pru1.out > /sys/class/remoteproc/remoteproc2/firmware
 
-echo start > /sys/class/remoteproc/remoteproc1/state
+#echo start > /sys/class/remoteproc/remoteproc1/state
 echo start > /sys/class/remoteproc/remoteproc2/state
 
 # PRU pins
@@ -45,4 +45,5 @@ fi
 '
 
 echo Initializing BME script...
-/root/simar-software/bme
+systemctl start simar_sensors
+systemctl start simar_volt

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2021-11-25
+### Added
+- Monitors power factor, voltage glitches and frequency fully
+
+### Changed
+- Uses only one PRU for all PRU related measurements
+- Wireless SIMAR now utilizes hidden SSIDs instead of a WPA-EAP connection
+- Logs are concentrated in one file
+- Startup has started being moved towards the bbb-function standard
+- Merged BMP280/BME280 support into one library
+- All required startup operations are done in one file; monitoring is done in separate services (to avoid reinits)
+- BME data is held in a single Redis key
+
 ## [1.3.0] - 2021-10-14
 ### Added
 - Wireless version can now work offline
