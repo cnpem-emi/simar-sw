@@ -169,9 +169,7 @@ void* glitch_counter() {
 
   if (prufd.fd < 0) {
     syslog(LOG_ERR, "Failed to communicate with PRU1");
-    for (;;) {
-    }
-    // exit(-9);
+    exit(-9);
   }
 
   for (;;) {
@@ -211,13 +209,6 @@ int main(int argc, char* argv[]) {
   syslog(LOG_NOTICE, "Starting up...");
 
   connect_local();
-  /*r? (Error code 1)\n");
-      else
-        syslog(LOG_ERR, "Unknown redis error (error code %d)\n", c->err);
-
-      nanosleep((const struct timespec[]){{0, 700000000L}}, NULL);  // 700ms
-    }
-  } while (c->err);*/
 
   syslog(LOG_NOTICE, "Redis voltage DB connected");
 
@@ -238,9 +229,6 @@ int main(int argc, char* argv[]) {
 
   pthread_t glitch_thread;
   pthread_create(&glitch_thread, NULL, glitch_counter, NULL);
-
-  //pthread_t pf_thread;
-  //pthread_create(&pf_thread, NULL, pf_measure, NULL);
 
   syslog(LOG_NOTICE, "All threads initialized");
 

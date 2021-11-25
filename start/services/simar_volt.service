@@ -6,7 +6,7 @@ After=syslog.target multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/root/simar-software/start/simar_volt.sh
+ExecStart=/root/simar-software/volt
 Restart=on-failure
 RestartSec=10
 KillMode=control-group

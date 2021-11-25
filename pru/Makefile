@@ -5,7 +5,7 @@ LD = lnkpru
 CFLAGS = --include_path=$(PRU_SWPKG)/include \
         --include_path=$(PRU_SWPKG)/include/am335x \
         -v3 -O4 --opt_for_speed=5 --endian=little \
-        --define=am3359 --define=pru1 --hardware_mac=on
+        --define=am3359 --define=pru1 --hardware_mac=on --verbose
 LDFLAGS = AM335x_PRU.cmd
 
 SRCS = $(wildcard *.c)
@@ -23,7 +23,7 @@ all: $(PROGS) $(ASM_PROGS) pru1.out
 	$(CC) $(CFLAGS) $< --output_file $@
 
 pru1.out: $(ASM_PROGS) $(PROGS)
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $(LDFLAGS) $^ --library=rpmsg_lib.lib -o $@
 
 clean:
 	rm -f pru1.out $(ASM_PROGS) $(PROGS)

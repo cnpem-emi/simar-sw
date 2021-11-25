@@ -21,7 +21,7 @@ wireless: /usr/local/lib/libhiredis.so $(PROGS)
 	$(COMPILE.c) $^ wireless.c -o $@ -lpthread -lhiredis
 
 %: %.c
-	$(COMPILE.c) -c $< -o $@
+	$(COMPILE.c) -c $^ -o $@
 
 /usr/local/lib/libhiredis.so:
 	git clone https://github.com/redis/hiredis.git
@@ -34,8 +34,8 @@ wireless: /usr/local/lib/libhiredis.so $(PROGS)
 install:
 	sed -i '/bind 127.0.0.1/c\bind 0.0.0.0' /etc/redis/*.conf
 	sed -i '/protected-mode yes/c\protected-mode no' /etc/redis/*.conf
-	cp ./start/simar_sensors.service /etc/systemd/system/.
-	cp ./start/simar_log_conf /etc/logrotate.d/simar
+	cp ./start/services/simar_sensors.service /etc/systemd/system/.
+	cp ./start/conf/simar_log_conf /etc/logrotate.d/simar
 	grep -qxF ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' /etc/rsyslog.conf || echo ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' >> /etc/rsyslog.conf
 	service rsyslog restart
 	systemctl daemon-reload
@@ -43,7 +43,7 @@ install:
 	systemctl enable simar_sensors
 
 install_volt:
-	cp ./start/simar_volt.service /etc/systemd/system/.
+	cp ./start/services/simar_volt.service /etc/systemd/system/.
 	service rsyslog restart
 	systemctl daemon-reload
 	systemctl start simar_volt
@@ -51,11 +51,11 @@ install_volt:
 
 install_wireless:
 	sed -i -e '57c/root/simar-software/wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
-	cp ./start/simar_sensors.service /etc/systemd/system/.
-	cp /etc/wpa_supplicant/ifupdown.sh /etc/ifplugd/action.d/ifupdown
-	cp ./start/simar_log_conf /etc/logrotate.d/simar
-	cp ./start/99-local.rules /etc/udev/rules.d/99-local.rules
-	cp ./start/usb-mount@.service /etc/systemd/system/usb-mount@.service
+	cp ./start/services/simar_sensors.service /etc/systemd/system/.
+	cp ./start/conf/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+	cp ./start/conf/simar_log_conf /etc/logrotate.d/simar
+	cp ./start/conf/99-local.rules /etc/udev/rules.d/99-local.rules
+	cp ./start/services/usb-mount@.service /etc/systemd/system/usb-mount@.service
 	cp ./start/usb-mount.sh /usr/local/bin/usb-mount.sh
 	grep -qxF ':syslogtag, isequal, "simar\:" /var/log/simar/simar.log' /etc/rsyslog.conf || echo ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' >> /etc/rsyslog.conf
 	service rsyslog restart
