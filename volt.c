@@ -297,13 +297,8 @@ int main(int argc, char* argv[]) {
         low_current = 0;
     }
 
-    if (!low_current) {
-      reply = redisCommand(c, "SET pfactor %.3f", duty);
-      freeReplyObject(reply);
-    } else {
-      reply = redisCommand(c, "SET pfactor %.3f", 1.0);
-      freeReplyObject(reply);
-    }
+    reply = redisCommand(c, "SET pfactor %.3f", low_current ? 1.0 : duty);
+    freeReplyObject(reply);
 
     nanosleep(inner_period, NULL);
   }
