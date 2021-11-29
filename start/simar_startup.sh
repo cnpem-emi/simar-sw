@@ -22,15 +22,6 @@ config-pin p9_22 spi_sclk
 # PRU firmware
 cp /root/simar-software/bin/pru*.out /lib/firmware/
 
-#echo stop > /sys/class/remoteproc/remoteproc1/state
-echo stop > /sys/class/remoteproc/remoteproc2/state
-
-#echo pru0.out > /sys/class/remoteproc/remoteproc1/firmware
-echo pru1.out > /sys/class/remoteproc/remoteproc2/firmware
-
-#echo start > /sys/class/remoteproc/remoteproc1/state
-echo start > /sys/class/remoteproc/remoteproc2/state
-
 # PRU pins
 config-pin P8_45 pruin
 config-pin P8_46 pruout
