@@ -14,7 +14,11 @@ PROGS = $(patsubst %.c,%,$(SRCS))
 ASM_SRCS = $(wildcard *.asm)
 ASM_PROGS = $(patsubst %.asm,%,$(ASM_SRCS))
 
-all: $(PROGS) $(ASM_PROGS) pru1.out
+OUT = ../bin
+
+all: directories $(PROGS) $(ASM_PROGS) $(OUT)/pru1.out
+
+directories: $(OUT)
 
 %: %.c
 	$(CC) $(CFLAGS) $< --output_file $@
@@ -22,8 +26,8 @@ all: $(PROGS) $(ASM_PROGS) pru1.out
 %: %.asm
 	$(CC) $(CFLAGS) $< --output_file $@
 
-pru1.out: $(ASM_PROGS) $(PROGS)
-	$(LD) $(LDFLAGS) $^ -o $@
+$(OUT)/pru1.out: $(ASM_PROGS) $(PROGS)
+	$(LD) $(LDFLAGS) $^ --library=rpmsg_lib.lib -o $@
 
 clean:
 	rm -f pru1.out $(ASM_PROGS) $(PROGS)

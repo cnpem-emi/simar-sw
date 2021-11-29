@@ -44,7 +44,6 @@ void connect_local() {
   } while (c->err);
 }
 
-
 void connect_remote() {
   int server_i = 0;
   int server_amount = sizeof(servers) / sizeof(servers[0]);
@@ -90,7 +89,7 @@ void* command_listener() {
   while (1) {
     reply = redisCommand(c, "HMGET device ip_address name");
 
-    if(delay_name > 20) {
+    if (delay_name > 20) {
       delay_name = 0;
       if (reply != NULL && reply->type == REDIS_REPLY_ARRAY)
         snprintf(name, 64, "SIMAR:%s:%s", reply->element[0]->str, reply->element[1]->str);
@@ -107,26 +106,28 @@ void* command_listener() {
 
     if (reply->type == REDIS_REPLY_ARRAY) {
       for (int i = 0; i < (int)reply->elements; i++) {
-        if(reply->element[i]->str != NULL) {
-        command = reply->element[i]->str[0] - '0';
-        if (up_reply->element[i]->str == NULL  || reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
-          if (command != 1 && command != 0) {
-            syslog(LOG_ERR, "Received malformed command: %d", command);
-            rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
-                                    up_reply->element[i]->str[0] - '0');
-            freeReplyObject(rb_reply);
-            continue;
-          }
-          pthread_mutex_lock(&spi_mutex);
-          write_data(15, command ? "\xff" : "\x00", 1);
-          pthread_mutex_unlock(&spi_mutex);
+        if (reply->element[i]->str != NULL) {
+          command = reply->element[i]->str[0] - '0';
+          if (up_reply->element[i]->str == NULL ||
+              reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
+            if (command != 1 && command != 0) {
+              syslog(LOG_ERR, "Received malformed command: %d", command);
+              rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
+                                      up_reply->element[i]->str[0] - '0');
+              freeReplyObject(rb_reply);
+              continue;
+            }
+            pthread_mutex_lock(&spi_mutex);
+            write_data(15, command ? "\xff" : "\x00", 1);
+            pthread_mutex_unlock(&spi_mutex);
 
-          syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str + 2, i,
-                 command == 1 ? "on" : "off");
-          rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
-          freeReplyObject(rb_reply);
+            syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str + 2, i,
+                   command == 1 ? "on" : "off");
+            rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
+            freeReplyObject(rb_reply);
+          }
         }
-      }}
+      }
     } else if (reply->type == REDIS_REPLY_ERROR) {
       connect_remote();
     }
@@ -169,9 +170,7 @@ void* glitch_counter() {
 
   if (prufd.fd < 0) {
     syslog(LOG_ERR, "Failed to communicate with PRU1");
-    for (;;) {
-    }
-    // exit(-9);
+    exit(-9);
   }
 
   for (;;) {
@@ -183,14 +182,13 @@ void* glitch_counter() {
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
       uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
-      duty = duty_up/(duty_up+duty_down);
+      duty = duty_up / (duty_up + duty_down);
 
       reply = redisCommand(c, "SET glitch %d",
                            (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]);
       freeReplyObject(reply);
 
-      reply = redisCommand(c, "SET frequency %d",
-                           frequency/5);
+      reply = redisCommand(c, "SET frequency %d", frequency / 5);
       freeReplyObject(reply);
       read(prufd.fd, buf, 16);
     }
@@ -211,13 +209,6 @@ int main(int argc, char* argv[]) {
   syslog(LOG_NOTICE, "Starting up...");
 
   connect_local();
-  /*r? (Error code 1)\n");
-      else
-        syslog(LOG_ERR, "Unknown redis error (error code %d)\n", c->err);
-
-      nanosleep((const struct timespec[]){{0, 700000000L}}, NULL);  // 700ms
-    }
-  } while (c->err);*/
 
   syslog(LOG_NOTICE, "Redis voltage DB connected");
 
@@ -239,9 +230,6 @@ int main(int argc, char* argv[]) {
   pthread_t glitch_thread;
   pthread_create(&glitch_thread, NULL, glitch_counter, NULL);
 
-  //pthread_t pf_thread;
-  //pthread_create(&pf_thread, NULL, pf_measure, NULL);
-
   syslog(LOG_NOTICE, "All threads initialized");
 
   // Dummy conversions
@@ -253,7 +241,7 @@ int main(int argc, char* argv[]) {
   pthread_mutex_unlock(&spi_mutex);
 
   uint8_t i, j = 0, low_current;
-  struct timeval timeout = { 5, 0 };
+  struct timeval timeout = {5, 0};
   redisSetTimeout(c, timeout);
 
   syslog(LOG_NOTICE, "Main loop starting...");
@@ -263,19 +251,21 @@ int main(int argc, char* argv[]) {
     transfer_module("\x01\x01", 2);
 
     // Current
-    for(i = 1; i < 8; i++) {
-        message[1] = 131+i*4;
-        high_current = 0;
-        for(j = 0; j < 100; j++) {
-            spi_transfer(message, buffer, 2);
-            spi_transfer(message, buffer, 2);
-            if(buffer[0] != 255 || buffer[1] != 255) {
-              current_cache = calc_voltage(buffer);
-              if(current_cache > high_current) high_current = current_cache;
-            }
+    for (i = 1; i < 8; i++) {
+      message[1] = 131 + i * 4;
+      high_current = 0;
+      for (j = 0; j < 100; j++) {
+        spi_transfer(message, buffer, 2);
+        spi_transfer(message, buffer, 2);
+        if (buffer[0] != 255 || buffer[1] != 255) {
+          current_cache = calc_voltage(buffer);
+          if (current_cache > high_current)
+            high_current = current_cache;
         }
+      }
 
-        if(high_current > 0) current[i-1] = (high_current - 2.5) / 0.125;
+      if (high_current > 0)
+        current[i - 1] = (high_current - 2.5) / 0.125;
     }
 
     // Throwaway
@@ -283,26 +273,30 @@ int main(int argc, char* argv[]) {
     spi_transfer("\x10\x83", buffer, 2);
     pthread_mutex_unlock(&spi_mutex);
 
-    if(buffer[0] != 255 || buffer[1] != 255) voltage = calc_voltage(buffer);
-    else continue;
+    if (buffer[0] != 255 || buffer[1] != 255)
+      voltage = calc_voltage(buffer);
+    else
+      continue;
 
     reply = redisCommand(c, "SET vch_%d %.3f", 0, voltage * VOLTAGE_CONST);
-    if(reply == NULL) connect_local();
+    if (reply == NULL)
+      connect_local();
     freeReplyObject(reply);
 
     low_current = 1;
 
-    for(i = 0; i < 7; i++) {
-        reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
-        freeReplyObject(reply);
+    for (i = 0; i < 7; i++) {
+      if (current[i] > 100 || current[i] < -2)
+        continue;
+      reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
+      freeReplyObject(reply);
 
-        if(current[i] > 0.8) low_current = 0;
+      if (current[i] > 0.8)
+        low_current = 0;
     }
 
-    if(!low_current) {
-        reply = redisCommand(c, "SET pfactor %.3f", duty);
-        freeReplyObject(reply);
-    }
+    reply = redisCommand(c, "SET pfactor %.3f", low_current ? 1.0 : duty);
+    freeReplyObject(reply);
 
     nanosleep(inner_period, NULL);
   }

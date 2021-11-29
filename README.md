@@ -24,14 +24,9 @@ Works better with Debian 10 or later
 
 Run `./install.sh` and follow the onscreen instructions. Or:
 
-### Temperature/Pressure/Humidity/Door
+## Build all binaries
 ``` 
-make bme
-```
-
-### Temperature/Pressure/Humidity (Plug-and-play, single sensor)
-``` 
-make wireless
+make
 ```
 
 ### Wired connection
@@ -43,14 +38,6 @@ make install
 ```
 make install_wireless
 ```
-
-### Voltage/Current/Power Factor/Remote Actuation/Glitches/Frequency
-*Requires kernel 5.10 or later*
-```
-make volt
-make install_volt
-```
-
 
 ## Important notes
 - If SPI isn't working, check the bus before anything else. Depending on your board, the first bus might be either 1.0 or 0.0
