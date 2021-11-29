@@ -1,6 +1,8 @@
 #!/bin/bash
 
-export SIMAR_FOLDER=/root/simar-software
+SIMAR_FOLDER=/root/simar-software
+RSYNC_ADDR=10.128.114.161
+
 rsync -a --delete-after 10.128.114.161::simar $SIMAR_FOLDER --contimeout=5
 
 # IO pins, just to make sure (p9_12 is reserved for w1)
