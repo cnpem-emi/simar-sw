@@ -179,6 +179,8 @@ void* glitch_counter() {
     write(prufd.fd, "-", 1);
 
     if (read(prufd.fd, buf, 512)) {
+      /*for(int i = 0; i < 16; i++) { printf("%x", buf[i]); }
+      printf("\n");*/
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
       uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];

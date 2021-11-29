@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Startup has started being moved towards the bbb-function standard
 - Merged BMP280/BME280 support into one library
 - All required startup operations are done in one file; monitoring is done in separate services (to avoid reinits)
+- BME data is held in a single Redis key
 
 ## [1.3.0] - 2021-10-14
 ### Added

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export SIMAR_FOLDER=/root/simar-software
+rsync -a --delete-after 10.128.114.161::simar $SIMAR_FOLDER --contimeout=5
+
 # IO pins, just to make sure (p9_12 is reserved for w1)
 echo out > /sys/class/gpio/gpio48/direction
 echo out > /sys/class/gpio/gpio51/direction
@@ -45,5 +48,5 @@ fi
 '
 
 echo Initializing BME script...
-#systemctl start simar_sensors
-#systemctl start simar_volt
+systemctl start simar_sensors
+systemctl start simar_volt
