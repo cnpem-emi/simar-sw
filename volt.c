@@ -96,7 +96,6 @@ void* command_listener() {
   freeReplyObject(reply);
 
   up_reply = redisCommand(c_remote, "EXISTS %s", name);
-  printf("%s %lld\n", name, up_reply->integer);
 
   if (up_reply->type == REDIS_REPLY_INTEGER && up_reply->integer) {
     reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
