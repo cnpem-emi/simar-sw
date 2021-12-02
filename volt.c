@@ -86,6 +86,42 @@ void* command_listener() {
 
   freeReplyObject(up_reply);
 
+  reply = redisCommand(c, "HMGET device ip_address name");
+
+  if (reply != NULL && reply->type == REDIS_REPLY_ARRAY)
+    snprintf(name, 64, "SIMAR:%s:%s", reply->element[0]->str, reply->element[1]->str);
+  else
+    exit(-9);
+
+  freeReplyObject(reply);
+
+  up_reply = redisCommand(c_remote, "EXISTS %s", name);
+  printf("%s %lld\n", name, up_reply->integer);
+
+  if (up_reply->type == REDIS_REPLY_INTEGER && up_reply->integer) {
+    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
+
+    for (int i = 0; i < (int)reply->elements; i++) {
+      if (reply->element[i]->str != NULL) {
+        command = reply->element[i]->str[0] - '0';
+        if (command != 1 && command != 0) {
+          syslog(LOG_ERR, "Received malformed command: %d", command);
+          rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i, 1);
+          freeReplyObject(rb_reply);
+          continue;
+        }
+        pthread_mutex_lock(&spi_mutex);
+        write_data(15, command ? "\xff" : "\x00", 1);
+        pthread_mutex_unlock(&spi_mutex);
+      }
+    }
+  } else {
+    // Sets default values if they do not exist already
+    reply = redisCommand(c_remote, "HSET %s 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
+  }
+  freeReplyObject(up_reply);
+  freeReplyObject(reply);
+
   while (1) {
     reply = redisCommand(c, "HMGET device ip_address name");
 
@@ -242,7 +278,7 @@ int main(int argc, char* argv[]) {
 
   pthread_mutex_unlock(&spi_mutex);
 
-  uint8_t i, j = 0, low_current;
+  uint8_t i, read_fails = 0, j = 0, low_current;
   struct timeval timeout = {5, 0};
   redisSetTimeout(c, timeout);
 
@@ -275,10 +311,14 @@ int main(int argc, char* argv[]) {
     spi_transfer("\x10\x83", buffer, 2);
     pthread_mutex_unlock(&spi_mutex);
 
-    if (buffer[0] != 255 || buffer[1] != 255)
+    if (buffer[0] != 255 || buffer[1] != 255) {
       voltage = calc_voltage(buffer);
-    else
+    } else {
+      syslog(LOG_ERR, "Voltage reading failure");
+      if (read_fails++ > 10)
+        return (-9);
       continue;
+    }
 
     reply = redisCommand(c, "SET vch_%d %.3f", 0, voltage * VOLTAGE_CONST);
     if (reply == NULL)
