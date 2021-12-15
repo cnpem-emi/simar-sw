@@ -1,23 +1,25 @@
 #include <fcntl.h>
+#include <hiredis/hiredis.h>
 #include <stdlib.h>
+#include <syslog.h>
 #include <time.h>
 #include <unistd.h>
 #include "spi/common.h"
 
 #define AI_PIN "/sys/bus/iio/devices/iio:device0/in_voltage1_raw"
 
-double get_rpm(double runtime, int* spinning) {
+double get_rpm(double runtime, uint8_t* spinning) {
   char adc[5] = {0};
 
-  int new_val = 0, old = 0;
+  uint32_t new_val = 0, old = 0;
   double valley_spacing = 0;
   double sum_valley_spacing = 0;
   double current_valley_spacing = 0;
   double count_valley_spacing = 0;
-  int valley_count = 1;
+  uint32_t valley_count = 1;
   *spinning = 0;
 
-  for (int i = 0; i < 100; i++) {
+  for (uint8_t i = 0; i < 100; i++) {
     int fd = open(AI_PIN, O_RDONLY);
     read(fd, adc, 4);
     close(fd);
@@ -38,14 +40,17 @@ double get_rpm(double runtime, int* spinning) {
     old = new_val;
     usleep(1000);
   }
+  if (count_valley_spacing < 1)
+    return 0.0;
 
   return (60 / (sum_valley_spacing / count_valley_spacing * runtime)) / 3;
 }
 
 int main(int argc, char* argv[]) {
   clock_t t;
-
-  int spinning = 0;
+  redisContext* c;
+  redisReply* reply;
+  uint8_t spinning = 0;
 
   t = clock();
   get_rpm(0.0013, &spinning);
@@ -53,5 +58,26 @@ int main(int argc, char* argv[]) {
 
   double runtime = ((double)t) / CLOCKS_PER_SEC / 18;
 
-  get_rpm(runtime, &spinning);
+  do {
+    c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
+
+    if (c->err) {
+      if (c->err == 1)
+        syslog(-2,
+               "Redis server instance not available. Have you "
+               "initialized the Redis server? (Error code 1)\n");
+      else
+        syslog(-2, "Unknown redis error (error code %d)\n", c->err);
+
+      nanosleep((const struct timespec[]){{0, 700000000L}}, NULL);  // 700ms
+    }
+  } while (1);
+
+  while (1) {
+    reply = (redisReply*)redisCommand(c, "HSET fan speed %.3f", get_rpm(runtime, &spinning));
+    freeReplyObject(reply);
+
+    reply = (redisReply*)redisCommand(c, "HSET fan spin %.3f", spinning);
+    freeReplyObject(reply);
+  }
 }
