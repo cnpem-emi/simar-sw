@@ -8,7 +8,7 @@
 
 #define AI_PIN "/sys/bus/iio/devices/iio:device0/in_voltage1_raw"
 
-double get_rpm(double runtime, uint8_t* spinning) {
+double get_rpm(double runtime) {
   char adc[5] = {0};
 
   uint32_t new_val = 0, old = 0;
@@ -17,7 +17,6 @@ double get_rpm(double runtime, uint8_t* spinning) {
   double current_valley_spacing = 0;
   double count_valley_spacing = 0;
   uint32_t valley_count = 1;
-  *spinning = 0;
 
   for (uint8_t i = 0; i < 100; i++) {
     int fd = open(AI_PIN, O_RDONLY);
@@ -25,7 +24,6 @@ double get_rpm(double runtime, uint8_t* spinning) {
     close(fd);
     new_val = atoi(adc);
     if (abs(new_val - old) > 50 && old != 0) {
-      *spinning = 1;
       if (new_val > 500)
         valley_count = 1;
       if (new_val < 200 && valley_count) {
@@ -50,10 +48,9 @@ int main(int argc, char* argv[]) {
   clock_t t;
   redisContext* c;
   redisReply* reply;
-  uint8_t spinning = 0;
 
   t = clock();
-  get_rpm(0.0013, &spinning);
+  get_rpm(0.0013);
   t = clock() - t;
 
   double runtime = ((double)t) / CLOCKS_PER_SEC / 18;
@@ -74,10 +71,7 @@ int main(int argc, char* argv[]) {
   } while (1);
 
   while (1) {
-    reply = (redisReply*)redisCommand(c, "HSET fan speed %.3f", get_rpm(runtime, &spinning));
-    freeReplyObject(reply);
-
-    reply = (redisReply*)redisCommand(c, "HSET fan spin %.3f", spinning);
+    reply = (redisReply*)redisCommand(c, "HSET fan speed %.3f", get_rpm(runtime));
     freeReplyObject(reply);
   }
 }
