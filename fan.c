@@ -45,6 +45,8 @@ double get_rpm(double runtime) {
 }
 
 int main(int argc, char* argv[]) {
+  openlog("simar", 0, LOG_LOCAL0);
+  
   clock_t t;
   redisContext* c;
   redisReply* reply;
@@ -68,7 +70,7 @@ int main(int argc, char* argv[]) {
 
       nanosleep((const struct timespec[]){{0, 700000000L}}, NULL);  // 700ms
     }
-  } while (1);
+  } while (c->err);
 
   while (1) {
     reply = (redisReply*)redisCommand(c, "HSET fan speed %.3f", get_rpm(runtime));
