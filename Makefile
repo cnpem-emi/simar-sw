@@ -19,17 +19,17 @@ wireless: $(OUT)/wireless
 $(OUT):
 	mkdir -p $(OUT)
 
-$(OUT)/volt: /usr/local/lib/libhiredis.so volt.c spi/common 
+$(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common 
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
-$(OUT)/bme: /usr/local/lib/libhiredis.so $(PROGS)
-	$(COMPILE.c) $^ bme.c -o $@ -lhiredis
+$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c $(PROGS)
+	$(COMPILE.c) $^ -o $@ -lhiredis
 
-$(OUT)/wireless: /usr/local/lib/libhiredis.so $(PROGS)
-	$(COMPILE.c) $^ wireless.c -o $@ -lpthread -lhiredis
+$(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
+	$(COMPILE.c) $^ -o $@ -lpthread -lhiredis
 
-$(OUT)/fan: /usr/local/lib/libhiredis.so $(PROGS)
-	$(COMPILE.c) $^ fan.c -o $@ -lpthread -lhiredis
+$(OUT)/fan: /usr/local/lib/libhiredis.so main/fan.c $(PROGS)
+	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/pru1.out:
 	$(MAKE) -C pru
