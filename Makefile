@@ -11,7 +11,7 @@ OUT = bin
 
 .PHONY: all directories clean install_common
 
-build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/pru1.out
+build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/leak $(OUT)/pru1.out
 
 directories: $(OUT)
 wireless: $(OUT)/wireless
@@ -31,6 +31,9 @@ $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
 $(OUT)/fan: /usr/local/lib/libhiredis.so main/fan.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
+$(OUT)/leak: /usr/local/lib/libhiredis.so main/leak.c $(PROGS)
+	$(COMPILE.c) $^ -o $@ -lhiredis
+
 $(OUT)/pru1.out:
 	$(MAKE) -C pru
 
@@ -47,7 +50,7 @@ $(OUT)/pru1.out:
 
 install_common:
 	sed -i -e "3cSIMAR_FOLDER=$$PWD" ./start/simar_startup.sh
-	cp ./start/services/simar_sensors.service /etc/systemd/system/.
+	cp ./start/services/simar@.service /etc/systemd/system/.
 	cp ./start/conf/simar_log_conf /etc/logrotate.d/simar
 	grep -qxF ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' /etc/rsyslog.conf || echo ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' >> /etc/rsyslog.conf
 
@@ -57,8 +60,6 @@ install: install_common
 	cp ./start/services/simar_volt.service /etc/systemd/system/.
 	service rsyslog restart
 	systemctl daemon-reload
-	systemctl start simar_sensors
-	systemctl enable simar_sensors
 
 install_wireless: install_common
 	sed -i -e "3cexport SIMAR_FOLDER=$$PWD" ./start/simar_startup.sh

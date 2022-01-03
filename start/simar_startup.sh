@@ -41,5 +41,6 @@ fi
 '
 
 echo Initializing BME script...
-systemctl start simar_sensors
+systemctl start simar@bme
+systemctl start simar@leak
 systemctl start simar_volt

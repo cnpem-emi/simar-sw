@@ -1,12 +1,12 @@
 [Unit]
-Description=SIMAR sensors service
+Description=SIMAR %i service
 
 Wants=network.target
 After=syslog.target network-online.target
 
 [Service]
 Type=simple
-ExecStart=/root/simar-software/bin/bme
+ExecStart=/root/simar-software/bin/%i
 Restart=always
 RestartSec=10
 KillMode=control-group
