@@ -1,15 +1,15 @@
 #include <hiredis/hiredis.h>
-#include <unistd.h>
 #include <syslog.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "../spi/common.h"
 
 int main(int argc, char* argv[]) {
   openlog("simar", 0, LOG_LOCAL0);
 
-  redisContext *c;
-  redisReply *reply;
+  redisContext* c;
+  redisReply* reply;
 
   do {
     c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
@@ -39,15 +39,16 @@ int main(int argc, char* argv[]) {
 
   const struct timespec* period = (const struct timespec[]){{1, 0}};
 
-  while(1) {
+  while (1) {
     select_module(0, 2);
     spi_transfer(dummy_data, dummy_data, 1);
     select_module(0, 3);
     spi_transfer(dummy_data, dummy_data, 1);
 
     read(fd, digital_buffer, 1);
-    for(int i = 0; i < 8; i++) {
-      reply = redisCommand(c, "HSET leak_detector %d %d", i, !((digital_buffer[0] >> i) & 0b00000001));
+    for (int i = 0; i < 8; i++) {
+      reply =
+          redisCommand(c, "HSET leak_detector %d %d", i, !((digital_buffer[0] >> i) & 0b00000001));
       freeReplyObject(reply);
     }
 
