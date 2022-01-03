@@ -11,7 +11,7 @@ OUT = bin
 
 .PHONY: all directories clean install_common
 
-build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/pru1.out
+build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/leak $(OUT)/pru1.out
 
 directories: $(OUT)
 wireless: $(OUT)/wireless
@@ -29,6 +29,9 @@ $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lpthread -lhiredis
 
 $(OUT)/fan: /usr/local/lib/libhiredis.so main/fan.c $(PROGS)
+	$(COMPILE.c) $^ -o $@ -lhiredis
+
+$(OUT)/leak: /usr/local/lib/libhiredis.so main/leak.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/pru1.out:

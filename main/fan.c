@@ -46,7 +46,7 @@ double get_rpm(double runtime) {
 
 int main(int argc, char* argv[]) {
   openlog("simar", 0, LOG_LOCAL0);
-  
+
   clock_t t;
   redisContext* c;
   redisReply* reply;
