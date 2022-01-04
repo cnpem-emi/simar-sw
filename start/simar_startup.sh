@@ -43,4 +43,8 @@ fi
 echo Initializing BME script...
 systemctl start simar@bme
 systemctl start simar@leak
-systemctl start simar_volt
+
+if test -f "/root/simar-software/bin/pru1.out"; then
+    systemctl start simar_volt
+fi
+
