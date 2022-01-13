@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
   freeReplyObject(reply);
 
   for (int i = 0; i < valid_i; i++) {
-    reply = redisCommand(c, "GET avg_%s", sensors[i].name);
+    reply = redisCommand(c, "HGET %s avg", sensors[i].name);
 
     if (!reply->str) {
       sensors[i].past_pres = 0;
@@ -263,13 +263,13 @@ int main(int argc, char* argv[]) {
         return SENSOR_FAIL;
       }
 
-      reply = redisCommand(c, "GET open_%s", sensors[i].name);
+      reply = redisCommand(c, "HGET %s open", sensors[i].name);
       syslog(LOG_NOTICE, "Sensor %d had open state %s", i, reply->str);
 
       if (!strcmp(reply->str, "1")) {
         syslog(LOG_NOTICE, "Sensor %d had open avg. %s", i, reply->str);
         freeReplyObject(reply);
-        reply = redisCommand(c, "GET openavg_%s", sensors[i].name);
+        reply = redisCommand(c, "HGET %s openavg", sensors[i].name);
 
         if (reply->str && atof(reply->str)) {
           sensors[i].open_average = atof(reply->str) + pressure_delta;
