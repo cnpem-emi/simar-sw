@@ -83,6 +83,27 @@ void direct_mux(uint8_t id) {
     bbb_mmio_set_low(mux1);
 }
 
+void direct_ext_mux(uint8_t id) {
+  char* rx;
+  rx = malloc(1 * sizeof(char));
+
+  char ext_mux_id[1] = {id};
+
+  spi_mod_comm("\x7a", rx, 1);
+  spi_transfer(ext_mux_id, rx, 1);
+
+  free(rx);
+}
+
+void unselect_i2c_extender() {
+  char* rx;
+  rx = malloc(1 * sizeof(char));
+
+  spi_mod_comm("\x00", rx, 1);
+
+  free(rx);
+}
+
 int8_t configure_mux() {
   int8_t rslt = 0;
 

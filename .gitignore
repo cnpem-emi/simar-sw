@@ -25,3 +25,5 @@ common
 pru1.out
 count
 bin/
+valgrind-out.txt
+pru/main

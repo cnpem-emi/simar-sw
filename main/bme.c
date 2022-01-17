@@ -4,8 +4,12 @@
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
+#include "../spi/common.h"
 
 #include "../bme280/common/common.h"
+
+#define IFACE_BOARD_I2C_LEN 3
+#define EXT_BOARD_I2C_LEN 4
 
 const char servers[1][11] = {"10.15.0.254"};
 
@@ -120,7 +124,7 @@ int main(int argc, char* argv[]) {
   redisContext *c, *c_remote;
   redisReply *reply, *reply_remote;
 
-  struct sensor_data sensors[8];
+  struct sensor_data sensors[16];
 
   sensors[0].dev.settings.osr_h = BME280_OVERSAMPLING_4X;
   sensors[0].dev.settings.osr_p = BME280_OVERSAMPLING_16X;
@@ -128,8 +132,9 @@ int main(int argc, char* argv[]) {
   sensors[0].dev.settings.filter = BME280_FILTER_COEFF_OFF;
 
   uint8_t valid_i = 0;
+  uint8_t sensor_addr;
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < IFACE_BOARD_I2C_LEN * 2; i++) {
     if (valid_i < argc && strcmp(argv[i + 1], "-") == 0) {
       for (int j = i + 1; j <= argc - 1; j++)
         argv[j] = argv[j + 1];
@@ -139,10 +144,12 @@ int main(int argc, char* argv[]) {
 
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
-    sensor.id.mux_id = i % 4;
+    sensor.id.mux_id = i % IFACE_BOARD_I2C_LEN;
+    sensor.id.ext_mux_id = -1;
 
-    if (bme_init(&sensor.dev, &sensor.id, i < 4 ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC) ==
-        BME280_OK) {
+    sensor_addr = i < IFACE_BOARD_I2C_LEN ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
+
+    if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
       sensors[valid_i] = sensor;
       sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
       sensors[valid_i].average = sensors[valid_i].open_average = 0;
@@ -151,12 +158,44 @@ int main(int argc, char* argv[]) {
       if (valid_i < argc)
         snprintf(sensors[valid_i].name, MAX_NAME_LEN, "%s", argv[valid_i + 1]);
       else
-        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i % 4,
-                 i < 4 ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC);
+        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i % IFACE_BOARD_I2C_LEN,
+                 sensor_addr);
 
       valid_i++;
     }
   }
+
+#if(IFACE_BOARD_I2C_LEN == 3)
+
+  uint32_t mode = 3;
+  uint8_t bpw = 8;
+  uint32_t speed = 1000000;
+
+  spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
+
+  for (int i = 0; i < EXT_BOARD_I2C_LEN * 2; i++) {
+    struct sensor_data sensor;
+    sensor.dev = sensors[0].dev;
+    sensor.id.mux_id = 3;
+    sensor.id.ext_mux_id = i;
+
+    sensor_addr = i < EXT_BOARD_I2C_LEN ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
+
+    if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
+      sensors[valid_i] = sensor;
+      sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
+      sensors[valid_i].average = sensors[valid_i].open_average = 0;
+      sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
+
+      snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + IFACE_BOARD_I2C_LEN,
+               sensor_addr);
+      valid_i++;
+    }
+  }
+
+  unselect_i2c_extender();
+
+#endif
 
   if (!valid_i || (argc && valid_i < argc)) {
     syslog(LOG_CRIT, "Not enough sensors found");
@@ -331,6 +370,10 @@ int main(int argc, char* argv[]) {
       }
       nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
     }
+
+#if(IFACE_BOARD_I2C_LEN == 3)
+    unselect_i2c_extender();
+#endif
 
     reply_remote = (redisReply*)redisCommand(c_remote, "GET pressure_B15");
 

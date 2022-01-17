@@ -117,5 +117,6 @@ int select_module(int address, int module);
 int transfer_module(char* data, int len);
 int write_data(int address, char* data, int len);
 int read_data(int address, char* rx);
+int spi_mod_comm(char* tx, char* rx, int len);
 
 #endif
