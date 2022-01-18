@@ -173,14 +173,14 @@ int main(int argc, char* argv[]) {
 
   spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
 
-  for (int i = 1; i < EXT_BOARD_I2C_LEN * 2; i++) {
+  for (int i = 1; i < EXT_BOARD_I2C_LEN + 2; i++) {
     if (i % 4 == 0)
       continue;
 
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
     sensor.id.mux_id = 3;
-    sensor.id.ext_mux_id = i < 8 ? i % 4 : (i % 4) << 2;
+    sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
     sensor_addr = BME280_I2C_ADDR_PRIM;
 
