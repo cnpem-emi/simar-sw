@@ -31,6 +31,8 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
 
   direct_mux(id->mux_id);
 
+  if(id->ext_mux_id >= 0) direct_ext_mux(id->ext_mux_id);
+
   rslt = bme280_init(dev);
   if (rslt != BME280_OK) {
     syslog(LOG_ALERT, "Failed to initialize the device %d at %x (code %+d).\n", id->mux_id, addr,
@@ -57,7 +59,8 @@ int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data) {
   id = *((struct identifier*)dev->intf_ptr);
 
   direct_mux(id.mux_id);
-  dev->delay_us(10000, dev->intf_ptr);
+
+  if(id.ext_mux_id >= 0) direct_ext_mux(id.ext_mux_id);
 
   rslt = bme280_get_sensor_data(BME280_ALL, comp_data, dev);
   comp_data->pressure *= 0.01;
