@@ -136,7 +136,7 @@ int spi_transfer(const char* tx, const char* rx, int len) {
       .bits_per_word = _bits,
   };
 
-  ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+  ret = ioctl(fd, SPI_IOC_MESSAGE(len), &tr);
 
   return ret < 0;
 }
