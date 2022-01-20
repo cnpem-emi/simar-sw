@@ -8,10 +8,11 @@
 
 #include "../bme280/common/common.h"
 
-#define IFACE_BOARD_I2C_LEN 3
+// Set to 3 to enable the I2C Expansion Board
+#define IFACE_BOARD_I2C_LEN 4
 #define EXT_BOARD_I2C_LEN 6
 
-const char servers[1][11] = {"10.15.0.254"};
+const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
 
 /**
  * @brief Updates door opening status
@@ -29,8 +30,7 @@ void get_open_iter(struct sensor_data* sensor) {
    and listen for sudden changes.
   */
 
-  // 0.23 refers to the standard deviation of the population over a period of 3
-  // minutes
+  // 0.23 refers to the standard deviation of the population over a period of 3 minutes
   if (sensor->average - sensor->data.pressure < -0.23 ||
       (sensor->open_average != 0 && sensor->open_average - sensor->data.pressure < 0.23)) {
     if (sensor->strikes_closed > (WINDOW_SIZE - 1))
@@ -180,6 +180,14 @@ int main(int argc, char* argv[]) {
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
     sensor.id.mux_id = 3;
+
+    /* Gets multiplexer channel ID for I2C extension board.
+    *  Up to the fourth channel, only the first mux. is used, which
+    *  is selected by the first pair of bits (from LSB).
+    *  From the fourth channel onwards, the second mux. is used.
+    *  Channels xx00 and 00xx cannot be used, as they are currently 
+    *  used for "parking" each multiplexer to prevent cross-communication.
+    */
     sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
     sensor_addr = BME280_I2C_ADDR_PRIM;
