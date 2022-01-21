@@ -40,7 +40,7 @@ cycle_up:
 	NOP
 	NOP
 	NOP
-	QBBC		cycle_down, r31.b0, 4	; P8_41 - Power factor
+	QBBC		cycle_down, r31.b0, 4		; P8_41 - Power factor
 	ADD		CYCLE_SET, CYCLE_SET, 1
 	JMP		ret_loop
 
