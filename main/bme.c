@@ -281,10 +281,17 @@ int main(int argc, char* argv[]) {
 
     if (!reply->str) {
       sensors[i].past_pres = 0;
+      
+      for(int k = 0; k < 3; k++) {
+             bme_read(&sensors[i].dev, &sensors[i].data);
+             nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
+       }
+      
       for (int j = 0; j < WINDOW_SIZE; j++) {
         bme_read(&sensors[i].dev, &sensors[i].data);
+        nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
 
-        if (sensors[i].data.pressure > 800 && sensors[i].data.pressure < 1000) {
+        if (sensors[i].data.pressure > 850 && sensors[i].data.pressure < 1000) {
           sensors[i].window[j] = sensors[i].past_pres = sensors[i].data.pressure;
         } else {
           --j;
