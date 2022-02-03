@@ -23,7 +23,7 @@ $(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
 $(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c $(PROGS)
-	$(COMPILE.c) $^ -o $@ -lhiredis -g
+	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lpthread -lhiredis
