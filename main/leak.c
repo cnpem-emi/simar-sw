@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     read(fd, digital_buffer, 1);
     for (int i = 0; i < 8; i++) {
       reply =
-          redisCommand(c, "HSET leak_detector %d %d", i, !((digital_buffer[0] >> i) & 0b00000001));
+          redisCommand(c, "HSET leak_detector %d %d", i, ((digital_buffer[0] >> i) & 0b00000001));
       freeReplyObject(reply);
     }
 
