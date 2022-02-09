@@ -361,7 +361,7 @@ int main(int argc, char* argv[]) {
       if (check_alteration(sensors[i])) {
         reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "temperature",
                                           sensors[i].data.temperature);
-        if (reply->integer)
+        if (reply == NULL)
           return DB_FAIL;
         freeReplyObject(reply);
 
