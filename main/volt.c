@@ -315,7 +315,7 @@ int main(int argc, char* argv[]) {
     } else {
       syslog(LOG_ERR, "Voltage reading failure");
       if (read_fails++ > 10)
-        return (SENSOR_FAIL);
+        return (-2);
       continue;
     }
 
