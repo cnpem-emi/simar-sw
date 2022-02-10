@@ -61,8 +61,6 @@ void update_open(struct sensor_data* sensor) {
   for (int i = WINDOW_SIZE - 1; i > 0; i--)
     sensor->window[i - 1] = cache[i];
 
-  sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
-
   /* The "average" pressure is important to determine sudden changes, however,
   it'll only respond to gradual changes in order to deter statistical
   abnormalities.
@@ -76,7 +74,7 @@ void update_open(struct sensor_data* sensor) {
 
   double sum = 0;
 
-  for (int i = 0; i < WINDOW_SIZE; i++)
+  for (int i = 0; i < WINDOW_SIZE - 1; i++)
     sum += sensor->window[i];
 
   double diff = sensor->average - sensor->data.pressure;
@@ -84,11 +82,16 @@ void update_open(struct sensor_data* sensor) {
 
   if ((sensor->is_open && sensor->strikes_closed == WINDOW_SIZE) ||
       (!sensor->is_open && sensor->strikes_closed == 0)) {
-    if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open))
+    if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open)) {
+      sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
+      sum += sensor->window[WINDOW_SIZE - 1];
       sensor->average = sum / WINDOW_SIZE;
-    else if (sensor->is_open &&
-             (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08)))
+    } else if (sensor->is_open &&
+               (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08))) {
+      sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
+      sum += sensor->window[WINDOW_SIZE - 1];
       sensor->open_average = sum / WINDOW_SIZE;
+    }
   }
 
   get_open_iter(sensor);
@@ -182,12 +185,12 @@ int main(int argc, char* argv[]) {
     sensor.id.mux_id = 3;
 
     /* Gets multiplexer channel ID for I2C extension board.
-    *  Up to the fourth channel, only the first mux. is used, which
-    *  is selected by the first pair of bits (from LSB).
-    *  From the fourth channel onwards, the second mux. is used.
-    *  Channels xx00 and 00xx cannot be used, as they are currently 
-    *  used for "parking" each multiplexer to prevent cross-communication.
-    */
+     *  Up to the fourth channel, only the first mux. is used, which
+     *  is selected by the first pair of bits (from LSB).
+     *  From the fourth channel onwards, the second mux. is used.
+     *  Channels xx00 and 00xx cannot be used, as they are currently
+     *  used for "parking" each multiplexer to prevent cross-communication.
+     */
     sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
     sensor_addr = BME280_I2C_ADDR_PRIM;
@@ -281,12 +284,12 @@ int main(int argc, char* argv[]) {
 
     if (!reply->str) {
       sensors[i].past_pres = 0;
-      
-      for(int k = 0; k < 3; k++) {
-             bme_read(&sensors[i].dev, &sensors[i].data);
-             nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
-       }
-      
+
+      for (int k = 0; k < 3; k++) {
+        bme_read(&sensors[i].dev, &sensors[i].data);
+        nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
+      }
+
       for (int j = 0; j < WINDOW_SIZE; j++) {
         bme_read(&sensors[i].dev, &sensors[i].data);
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
