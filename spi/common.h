@@ -20,7 +20,8 @@
 #define MMIO_GPIO_CLEARDATAOUT 0x190
 #define MMIO_GPIO_SETDATAOUT 0x194
 
-#define DHT_MAXCOUNT 32000
+#define SENSOR_FAIL -2
+#define DB_FAIL -3
 
 enum pins {
   USR_0 = 53,

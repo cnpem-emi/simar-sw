@@ -9,6 +9,7 @@
 #include "../bme280/common/common.h"
 
 // Set to 3 to enable the I2C Expansion Board
+#define ERROR_THRESHOLD 5
 #define IFACE_BOARD_I2C_LEN 4
 #define EXT_BOARD_I2C_LEN 6
 
@@ -114,8 +115,8 @@ int8_t check_alteration(struct sensor_data sensor) {
   }
 
   return sensor.past_pres == 0 ||
-         (fabs(sensor.past_pres - sensor.data.pressure) < 5 && sensor.data.pressure > 800 &&
-          sensor.data.pressure < 1000 && sensor.data.humidity != 100);
+         (fabs(sensor.past_pres - sensor.data.pressure) < ERROR_THRESHOLD &&
+          sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
 }
 
 int main(int argc, char* argv[]) {
@@ -183,15 +184,16 @@ int main(int argc, char* argv[]) {
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
     sensor.id.mux_id = 3;
+    while
 
-    /* Gets multiplexer channel ID for I2C extension board.
-     *  Up to the fourth channel, only the first mux. is used, which
-     *  is selected by the first pair of bits (from LSB).
-     *  From the fourth channel onwards, the second mux. is used.
-     *  Channels xx00 and 00xx cannot be used, as they are currently
-     *  used for "parking" each multiplexer to prevent cross-communication.
-     */
-    sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
+      /* Gets multiplexer channel ID for I2C extension board.
+       *  Up to the fourth channel, only the first mux. is used, which
+       *  is selected by the first pair of bits (from LSB).
+       *  From the fourth channel onwards, the second mux. is used.
+       *  Channels xx00 and 00xx cannot be used, as they are currently
+       *  used for "parking" each multiplexer to prevent cross-communication.
+       */
+      sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
     sensor_addr = BME280_I2C_ADDR_PRIM;
 
@@ -257,7 +259,7 @@ int main(int argc, char* argv[]) {
 
   double pressure_delta = 0;
 
-  reply_remote = redisCommand(c_remote, "GET B15_?");
+  reply_remote = redisCommand(c_remote, "GET wgen2_pressure");
 
   if (reply_remote->str) {
     double external_pressure = atof(reply_remote->str);
@@ -317,12 +319,13 @@ int main(int argc, char* argv[]) {
         bme_read(&sensors[i].dev, &sensors[i].data);
         if (sensors[i].data.pressure > 900 && sensors[i].data.pressure < 1000)
           break;
-      }
+        nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
 
-      ++retries;
-      if (retries > 10) {
-        syslog(LOG_ERR, "Could not obtain realistic data from sensor number %d\n", i);
-        return SENSOR_FAIL;
+        ++retries;
+        if (retries > 10) {
+          syslog(LOG_ERR, "Could not obtain realistic data from sensor number %d\n", i);
+          return SENSOR_FAIL;
+        }
       }
 
       reply = redisCommand(c, "HGET %s open", sensors[i].name);
@@ -398,7 +401,7 @@ int main(int argc, char* argv[]) {
     unselect_i2c_extender();
 #endif
 
-    reply_remote = (redisReply*)redisCommand(c_remote, "GET pressure_B15");
+    reply_remote = (redisReply*)redisCommand(c_remote, "GET wgen2_pressure");
 
     if (reply_remote->str) {
       reply = (redisReply*)redisCommand(c, "SET last_ext_pressure %s", reply_remote->str);
