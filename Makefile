@@ -63,8 +63,8 @@ install: install_common
 
 install_wireless: install_common
 	sed -i -e "3cexport SIMAR_FOLDER=$$PWD" ./start/simar_startup.sh
-	sed -i -e '57c/root/simar-software/wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
-	cp ./start/services/simar_sensors.service /etc/systemd/system/.
+	sed -i -e '44csimar@wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
+	cp ./start/services/simar@.service /etc/systemd/system/.
 	cp ./start/conf/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 	cp ./start/conf/99-local.rules /etc/udev/rules.d/99-local.rules
 	cp ./start/services/usb-mount@.service /etc/systemd/system/usb-mount@.service
@@ -73,8 +73,8 @@ install_wireless: install_common
 	service rsyslog restart
 	udevadm control --reload-rules
 	systemctl daemon-reload
-	systemctl start simar_sensors
-	systemctl enable simar_sensors
+	systemctl start simar@wireless
+	systemctl enable simar@wireless
 
 clean:
 	rm -rf $(PROGS) $(OUT)
