@@ -4,14 +4,18 @@
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "../spi/common.h"
+#include "../utils/json/cJSON.h"
 
 #include "../bme280/common/common.h"
 
 // Set to 3 to enable the I2C Expansion Board
 #define ERROR_THRESHOLD 5
-#define IFACE_BOARD_I2C_LEN 4
 #define EXT_BOARD_I2C_LEN 6
+
+uint8_t iface_board_len = 4;
 
 const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
 
@@ -137,8 +141,39 @@ int main(int argc, char* argv[]) {
 
   uint8_t valid_i = 0;
   uint8_t sensor_addr;
+  uint8_t board_addr;
 
-  for (int i = 0; i < IFACE_BOARD_I2C_LEN * 2; i++) {
+  int fd = open("/opt/device.json", O_RDONLY);
+  if(fd > 0) {
+    int len = lseek(fd, 0, SEEK_END);
+    char *json_buf = malloc(len + 1);
+    lseek(fd, 0, SEEK_SET);
+    read(fd, json_buf, len);
+
+    const cJSON *boards = NULL;
+    const cJSON *board = NULL;
+    cJSON *boards_json = cJSON_Parse(json_buf);
+
+    if(json_buf != NULL) {
+      boards = cJSON_GetObjectItemCaseSensitive(boards_json, "boards");
+      cJSON_ArrayForEach(board, boards) {
+        cJSON *address = cJSON_GetObjectItemCaseSensitive(board, "type");
+        if(cJSON_IsString(address) && strcmp(address->valuestring, "spiExpansion") == 0) {
+          cJSON *board_no = cJSON_GetObjectItemCaseSensitive(board, "address");
+          if (cJSON_IsNumber(board_no)) {
+            board_addr = board_no->valueint;
+            set_ext_addr(board_addr);
+            iface_board_len = 3;
+          }
+        }
+      }
+    }
+
+    cJSON_Delete(boards_json);
+    free(json_buf);
+  }
+
+  for (int i = 0; i < iface_board_len * 2; i++) {
     if (valid_i < argc && strcmp(argv[i + 1], "-") == 0) {
       for (int j = i + 1; j <= argc - 1; j++)
         argv[j] = argv[j + 1];
@@ -148,10 +183,10 @@ int main(int argc, char* argv[]) {
 
     struct sensor_data sensor;
     sensor.dev = sensors[0].dev;
-    sensor.id.mux_id = i % IFACE_BOARD_I2C_LEN;
+    sensor.id.mux_id = i % iface_board_len;
     sensor.id.ext_mux_id = -1;
 
-    sensor_addr = i < IFACE_BOARD_I2C_LEN ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
+    sensor_addr = i < iface_board_len ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
 
     if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
       sensors[valid_i] = sensor;
@@ -162,58 +197,55 @@ int main(int argc, char* argv[]) {
       if (valid_i < argc)
         snprintf(sensors[valid_i].name, MAX_NAME_LEN, "%s", argv[valid_i + 1]);
       else
-        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i % IFACE_BOARD_I2C_LEN,
+        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i % iface_board_len,
                  sensor_addr);
 
       valid_i++;
     }
   }
 
-#if (IFACE_BOARD_I2C_LEN == 3)
+  if(iface_board_len == 3) {
+    uint32_t mode = 3;
+    uint8_t bpw = 8;
+    uint32_t speed = 1000000;
 
-  uint32_t mode = 3;
-  uint8_t bpw = 8;
-  uint32_t speed = 1000000;
+    spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
 
-  spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
+    for (int i = 1; i < EXT_BOARD_I2C_LEN + 2; i++) {
+      if (i % 4 == 0)
+        continue;
 
-  for (int i = 1; i < EXT_BOARD_I2C_LEN + 2; i++) {
-    if (i % 4 == 0)
-      continue;
-
-    struct sensor_data sensor;
-    sensor.dev = sensors[0].dev;
-    sensor.id.mux_id = 3;
-    while
+      struct sensor_data sensor;
+      sensor.dev = sensors[0].dev;
+      sensor.id.mux_id = 3;
 
       /* Gets multiplexer channel ID for I2C extension board.
-       *  Up to the fourth channel, only the first mux. is used, which
-       *  is selected by the first pair of bits (from LSB).
-       *  From the fourth channel onwards, the second mux. is used.
-       *  Channels xx00 and 00xx cannot be used, as they are currently
-       *  used for "parking" each multiplexer to prevent cross-communication.
-       */
+      *  Up to the fourth channel, only the first mux. is used, which
+      *  is selected by the first pair of bits (from LSB).
+      *  From the fourth channel onwards, the second mux. is used.
+      *  Channels xx00 and 00xx cannot be used, as they are currently
+      *  used for "parking" each multiplexer to prevent cross-communication.
+      */
       sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
-    sensor_addr = BME280_I2C_ADDR_PRIM;
+      sensor_addr = BME280_I2C_ADDR_PRIM;
 
-    do {
-      if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
-        sensors[valid_i] = sensor;
-        sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
-        sensors[valid_i].average = sensors[valid_i].open_average = 0;
-        sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
+      do {
+        if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
+          sensors[valid_i] = sensor;
+          sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
+          sensors[valid_i].average = sensors[valid_i].open_average = 0;
+          sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
 
-        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + IFACE_BOARD_I2C_LEN - 1,
-                 sensor_addr);
-        valid_i++;
-      }
-    } while (sensor_addr++ < 0x77);
+          snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + iface_board_len - 1,
+                  sensor_addr);
+          valid_i++;
+        }
+      } while (sensor_addr++ < 0x77);
+    }
+
+    unselect_i2c_extender();
   }
-
-  unselect_i2c_extender();
-
-#endif
 
   if (!valid_i || (argc && valid_i < argc)) {
     syslog(LOG_CRIT, "Not enough sensors found");
@@ -397,9 +429,7 @@ int main(int argc, char* argv[]) {
       nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
     }
 
-#if (IFACE_BOARD_I2C_LEN == 3)
-    unselect_i2c_extender();
-#endif
+    if(iface_board_len == 3) unselect_i2c_extender();
 
     reply_remote = (redisReply*)redisCommand(c_remote, "GET wgen2_pressure");
 
