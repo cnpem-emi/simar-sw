@@ -6,6 +6,14 @@
 int8_t fd_76 = 0;
 int8_t fd_77 = 0;
 
+/**
+ * @brief Initializes sensor communication
+ * @param[in] dev BME280/BMP280 device
+ * @param[in] id Sensor identification struct (channel)
+ * @param[in] addr Sensor address (0x76 or 0x77) 
+ * @retval 0 OK
+ * @retval -2 Communication failure
+ */
 int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
   int8_t rslt = BME280_OK;
   uint8_t settings_sel = 0;
@@ -31,7 +39,7 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
 
   direct_mux(id->mux_id);
 
-  if(id->ext_mux_id >= 0) direct_ext_mux(id->ext_mux_id);
+  if(id->ext_mux_id >= 0) direct_ext_mux(id->ext_mux_id, 15);
 
   rslt = bme280_init(dev);
   if (rslt != BME280_OK) {
@@ -52,6 +60,13 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
   return rslt;
 }
 
+/**
+ * @brief Reads sensor data
+ * @param[in] dev BME280/BMP280 device
+ * @param[out] comp_data Pointer to compensated data struct
+ * @retval 0 OK
+ * @retval -2 Communication failure
+ */
 int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data) {
   int8_t rslt = BME280_OK;
 
@@ -60,7 +75,7 @@ int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data) {
 
   direct_mux(id.mux_id);
 
-  if(id.ext_mux_id >= 0) direct_ext_mux(id.ext_mux_id);
+  if(id.ext_mux_id >= 0) direct_ext_mux(id.ext_mux_id, 15);
 
   rslt = bme280_get_sensor_data(BME280_ALL, comp_data, dev);
   comp_data->pressure *= 0.01;

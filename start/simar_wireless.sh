@@ -1,5 +1,10 @@
 #!/bin/bash
 
+SIMAR_FOLDER=/root/simar-software
+RSYNC_ADDR=10.128.114.161
+
+rsync -a --delete-after 10.128.114.161::simar $SIMAR_FOLDER --contimeout=5
+
 wpa_supplicant -B -P /root/simar-software/start/wpa-pid -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0
 PID=$(cat /root/simar-software/start/wpa-pid)
 dhclient wlan0

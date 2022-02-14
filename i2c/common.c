@@ -71,6 +71,11 @@ int8_t i2c_write(uint8_t reg_addr, const uint8_t* reg_data, uint32_t length, voi
   return 0;
 }
 
+/**
+ * @brief Selects an available I2C channel through the digital interface board (0 to 4)
+ * @param[in] id Desired channel ID
+ * @return void
+ */
 void direct_mux(uint8_t id) {
   if ((id >> 0) & 1)
     bbb_mmio_set_high(mux0);
@@ -83,18 +88,28 @@ void direct_mux(uint8_t id) {
     bbb_mmio_set_low(mux1);
 }
 
-void direct_ext_mux(uint8_t id) {
+/**
+ * @brief Selects an available I2C channel through the SPI and I2C extender boards (0 to 8)
+ * @param[in] id Desired channel ID
+ * @param[in] addr Designed extender board address
+ * @return void
+ */
+void direct_ext_mux(uint8_t id, uint8_t addr) {
   char* rx;
   rx = malloc(1 * sizeof(char));
 
   char ext_mux_id[1] = {id};
 
-  spi_mod_comm("\x7a", rx, 1);
+  select_module(addr, 2);
   spi_transfer(ext_mux_id, rx, 1);
 
   free(rx);
 }
 
+/**
+ * @brief Unselects the I2C extender (and SPI extender, by proxy)
+ * @return void
+ */
 void unselect_i2c_extender() {
   char* rx;
   rx = malloc(1 * sizeof(char));
@@ -104,6 +119,10 @@ void unselect_i2c_extender() {
   free(rx);
 }
 
+/**
+ * @brief Configures pins for the digital interface board multiplexing function
+ * @return void
+ */
 int8_t configure_mux() {
   int8_t rslt = 0;
 

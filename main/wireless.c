@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 
       if (sensor_number == -1) {
         syslog(LOG_CRIT, "Sensor could not be allocated a variable");
-        exit(-3);
+        exit(SENSOR_FAIL);
       }
     }
     syslog(LOG_NOTICE, "Redis DB connected");
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
     rewinddir(dr);
 
     if (sensor_number == 99 && redis_connect())
-      return 1;
+      return DB_FAIL;
 
     bme_read(&sensor.dev, &sensor.data);
     if (check_alteration(sensor)) {
@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
                                         sensor.data.temperature);
 
       if (reply == NULL)
-        continue;
+        return DB_FAIL;
       freeReplyObject(reply);
 
       reply = (redisReply*)redisCommand(c, "SET wgen%d_%s %.3f EX 5", sensor_number, "pressure",

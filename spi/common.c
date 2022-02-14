@@ -78,8 +78,8 @@ int bbb_mmio_get_gpio(gpio_t* gpio) {
  * @param[in] speed Speed (in Hz)
  * @param[in] cs CS Pin
  * @returns SPI bus open operation result
- * @retval 0 -> Success
- * @retval -1 -> Failure
+ * @retval 0 Success
+ * @retval -1 Failure
  */
 int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed) {
   fd = open(device, O_RDWR);
@@ -109,8 +109,8 @@ int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed)
 /**
  * @brief Closes SPI bus
  * @returns SPI bus close operation result
- * @retval 0 -> Success
- * @retval !0 -> Failure
+ * @retval 0 Success
+ * @retval !0 Failure
  */
 int spi_close() {
   return close(fd);
@@ -122,8 +122,8 @@ int spi_close() {
  * @param[out] rx RX buffer
  * @param[in] len Buffer length
  * @returns SPI transfer operation result
- * @retval 0 -> Success
- * @retval 1 -> Failure
+ * @retval 0 Success
+ * @retval 1 Failure
  */
 int spi_transfer(const char* tx, const char* rx, int len) {
   int ret;
