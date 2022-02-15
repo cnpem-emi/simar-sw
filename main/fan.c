@@ -24,7 +24,10 @@ double get_rpm(double runtime) {
 
   for (uint8_t i = 0; i < 100; i++) {
     int fd = open(AI_PIN, O_RDONLY);
-    read(fd, adc, 4);
+    if(read(fd, adc, 4) < 1) {
+      syslog(LOG_ERR, "No ADC found for fan sensor");
+      exit(-2);
+    }
     close(fd);
     new_val = atoi(adc);
     if (abs(new_val - old) > 50 && old != 0) {
@@ -66,11 +69,11 @@ int main(int argc, char* argv[]) {
 
     if (c->err) {
       if (c->err == 1)
-        syslog(-2,
+        syslog(LOG_ERR,
                "Redis server instance not available. Have you "
                "initialized the Redis server? (Error code 1)\n");
       else
-        syslog(-2, "Unknown redis error (error code %d)\n", c->err);
+        syslog(LOG_ERR, "Unknown redis error (error code %d)\n", c->err);
 
       nanosleep((const struct timespec[]){{0, 700000000L}}, NULL);  // 700ms
     }

@@ -49,11 +49,12 @@ int main(int argc, char* argv[]) {
     select_module(0, 3);
     spi_transfer(dummy_data, dummy_data, 1);
 
-    read(fd, digital_buffer, 1);
-    for (int i = 0; i < 8; i++) {
-      reply =
-          redisCommand(c, "HSET leak_detector %d %d", i, ((digital_buffer[0] >> i) & 0b00000001));
-      freeReplyObject(reply);
+    if (read(fd, digital_buffer, 1)) {
+      for (int i = 0; i < 8; i++) {
+        reply =
+            redisCommand(c, "HSET leak_detector %d %d", i, ((digital_buffer[0] >> i) & 0b00000001));
+        freeReplyObject(reply);
+      }
     }
 
     nanosleep(period, NULL);

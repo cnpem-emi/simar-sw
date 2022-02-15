@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <syslog.h>
+#include <math.h>
 
 #include "common.h"
 

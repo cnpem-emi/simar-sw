@@ -11,7 +11,6 @@
 #define WINDOW_SIZE 5
 #define MAX_NAME_LEN 16
 
-int8_t check_alteration(struct sensor_data sensor);
 int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data);
 int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t address);
 int8_t set_ext_addr(uint8_t addr);
@@ -31,5 +30,7 @@ struct sensor_data {
   struct identifier id;
   char name[MAX_NAME_LEN];
 };
+
+int8_t check_alteration(struct sensor_data sensor);
 
 #endif
