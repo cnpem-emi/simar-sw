@@ -1,3 +1,7 @@
+/*! @file volt.c
+ * @brief Main starting point for AC board module
+ */
+
 #include <fcntl.h>
 #include <hiredis/hiredis.h>
 #include <pthread.h>
@@ -26,6 +30,10 @@ char name[72];
 pthread_mutex_t spi_mutex;
 double duty = 1;
 
+/**
+ * @brief Connects to a local Redis server (or exits, in case none are available)
+ * @returns void
+ */
 void connect_local() {
   do {
     c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
@@ -44,6 +52,10 @@ void connect_local() {
   } while (c->err);
 }
 
+/**
+ * @brief Connects to remote Redis server (or exits, in case none are available)
+ * @returns void
+ */
 void connect_remote() {
   int server_i = 0;
   int server_amount = sizeof(servers) / sizeof(servers[0]);
@@ -64,6 +76,10 @@ void connect_remote() {
   } while (c_remote->err);
 }
 
+/**
+ * @brief Listens for commands sent to the Redis key on the main server
+ * @returns void
+ */
 void* command_listener() {
   redisReply *reply, *up_reply, *rb_reply;
   char names[8][64];
@@ -195,6 +211,10 @@ void* command_listener() {
   }
 }
 
+/**
+ * @brief Gets glitch count, frequency and duty cycle information from the PRU
+ * @returns void
+ */
 void* glitch_counter() {
   struct pollfd prufd;
   const struct timespec* period = (const struct timespec[]){{0, 500000L}};
@@ -214,8 +234,6 @@ void* glitch_counter() {
     write(prufd.fd, "-", 1);
 
     if (read(prufd.fd, buf, 512)) {
-      /*for(int i = 0; i < 16; i++) { printf("%x", buf[i]); }
-      printf("\n");*/
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
       uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
@@ -233,6 +251,11 @@ void* glitch_counter() {
   }
 }
 
+/**
+ * @brief Calculate actual voltage, by picking out the 8 bits in the middle of the ADCs response
+ * @param[in] buffer ADC response buffer
+ * @returns Actual voltage value
+ */
 double calc_voltage(char* buffer) {
   return (((buffer[1] & 0x0F) * 16) + ((buffer[0] & 0xF0) >> 4)) * RESOLUTION;
 }

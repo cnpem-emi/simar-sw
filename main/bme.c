@@ -1,10 +1,14 @@
+/*! @file bme.c
+ * @brief Main starting point for BME280 sensor module
+ */
+
+#include <fcntl.h>
 #include <hiredis/hiredis.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include "../spi/common.h"
 #include "../utils/json/cJSON.h"
@@ -102,27 +106,6 @@ void update_open(struct sensor_data* sensor) {
   get_open_iter(sensor);
 }
 
-/**
- * @brief Checks if the alteration in pressure over one measurement is realistic
- *
- * @param[in] sensor : Sensor to check
- *
- * @return void
- */
-int8_t check_alteration(struct sensor_data sensor) {
-  if (sensor.data.pressure == 1100 || sensor.data.pressure < 1) {
-    syslog(LOG_CRIT,
-           "Sensor %s failed to respond with valid measurements, unlikely to "
-           "recover, reinitializing all sensors",
-           sensor.name);
-    exit(SENSOR_FAIL);
-  }
-
-  return sensor.past_pres == 0 ||
-         (fabs(sensor.past_pres - sensor.data.pressure) < ERROR_THRESHOLD &&
-          sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
-}
-
 int main(int argc, char* argv[]) {
   openlog("simar", 0, LOG_LOCAL0);
 
@@ -144,22 +127,22 @@ int main(int argc, char* argv[]) {
   uint8_t board_addr;
 
   int fd = open("/opt/device.json", O_RDONLY);
-  if(fd > 0) {
+  if (fd > 0) {
     int len = lseek(fd, 0, SEEK_END);
-    char *json_buf = malloc(len + 1);
+    char* json_buf = malloc(len + 1);
     lseek(fd, 0, SEEK_SET);
     read(fd, json_buf, len);
 
-    const cJSON *boards = NULL;
-    const cJSON *board = NULL;
-    cJSON *boards_json = cJSON_Parse(json_buf);
+    const cJSON* boards = NULL;
+    const cJSON* board = NULL;
+    cJSON* boards_json = cJSON_Parse(json_buf);
 
-    if(json_buf != NULL) {
+    if (json_buf != NULL) {
       boards = cJSON_GetObjectItemCaseSensitive(boards_json, "boards");
       cJSON_ArrayForEach(board, boards) {
-        cJSON *address = cJSON_GetObjectItemCaseSensitive(board, "type");
-        if(cJSON_IsString(address) && strcmp(address->valuestring, "spiExpansion") == 0) {
-          cJSON *board_no = cJSON_GetObjectItemCaseSensitive(board, "address");
+        cJSON* address = cJSON_GetObjectItemCaseSensitive(board, "type");
+        if (cJSON_IsString(address) && strcmp(address->valuestring, "spiExpansion") == 0) {
+          cJSON* board_no = cJSON_GetObjectItemCaseSensitive(board, "address");
           if (cJSON_IsNumber(board_no)) {
             board_addr = board_no->valueint;
             set_ext_addr(board_addr);
@@ -204,7 +187,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if(iface_board_len == 3) {
+  if (iface_board_len == 3) {
     uint32_t mode = 3;
     uint8_t bpw = 8;
     uint32_t speed = 1000000;
@@ -220,12 +203,12 @@ int main(int argc, char* argv[]) {
       sensor.id.mux_id = 3;
 
       /* Gets multiplexer channel ID for I2C extension board.
-      *  Up to the fourth channel, only the first mux. is used, which
-      *  is selected by the first pair of bits (from LSB).
-      *  From the fourth channel onwards, the second mux. is used.
-      *  Channels xx00 and 00xx cannot be used, as they are currently
-      *  used for "parking" each multiplexer to prevent cross-communication.
-      */
+       *  Up to the fourth channel, only the first mux. is used, which
+       *  is selected by the first pair of bits (from LSB).
+       *  From the fourth channel onwards, the second mux. is used.
+       *  Channels xx00 and 00xx cannot be used, as they are currently
+       *  used for "parking" each multiplexer to prevent cross-communication.
+       */
       sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
       sensor_addr = BME280_I2C_ADDR_PRIM;
@@ -237,8 +220,8 @@ int main(int argc, char* argv[]) {
           sensors[valid_i].average = sensors[valid_i].open_average = 0;
           sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
 
-          snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + iface_board_len - 1,
-                  sensor_addr);
+          snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + iface_board_len + 1,
+                   sensor_addr);
           valid_i++;
         }
       } while (sensor_addr++ < 0x77);
@@ -429,7 +412,8 @@ int main(int argc, char* argv[]) {
       nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
     }
 
-    if(iface_board_len == 3) unselect_i2c_extender();
+    if (iface_board_len == 3)
+      unselect_i2c_extender();
 
     reply_remote = (redisReply*)redisCommand(c_remote, "GET wgen2_pressure");
 

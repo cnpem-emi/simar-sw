@@ -1,3 +1,7 @@
+/*! @file common.c
+ * @brief Common functions for I2C operations
+ */
+
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
 #include <stdlib.h>

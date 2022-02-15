@@ -1,3 +1,7 @@
+/*! @file fan.c
+ * @brief Main starting point for fan RPM sensor module
+ */
+
 #include <fcntl.h>
 #include <hiredis/hiredis.h>
 #include <stdlib.h>

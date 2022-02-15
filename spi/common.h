@@ -1,3 +1,8 @@
+/*! @file common.h
+ * @brief Common declarations for SPI operations
+ */
+
+
 #ifndef SPIUTIL_H
 #define SPIUTIL_H
 
@@ -97,6 +102,9 @@ enum pins {
   P8_46 = 71
 };
 
+/*!
+ * @brief Beaglebone GPIO pin structure
+ */
 typedef struct {
   int pin;
   volatile uint32_t* base;

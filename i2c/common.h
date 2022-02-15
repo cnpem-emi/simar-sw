@@ -1,3 +1,7 @@
+/*! @file common.h
+ * @brief Common declarations for I2C operations
+ */
+
 #ifndef I2C_COMMON_H
 #define I2C_COMMON_H
 
@@ -10,6 +14,9 @@ extern "C" {
 
 #include "../spi/common.h"
 
+/*!
+ * @brief Identification/communication structure for BME280 sensors
+ */
 struct identifier {
   int8_t ext_mux_id;
   uint8_t mux_id;

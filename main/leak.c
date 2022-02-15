@@ -1,3 +1,7 @@
+/*! @file leak.c
+ * @brief Main starting point for fan RPM sensor module
+ */
+
 #include <hiredis/hiredis.h>
 #include <syslog.h>
 #include <time.h>

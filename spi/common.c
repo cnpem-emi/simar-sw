@@ -1,4 +1,6 @@
-/// @file spiutil.c
+/*! @file common.c
+ * @brief Common functions for SPI operations
+ */
 
 #include "common.h"
 

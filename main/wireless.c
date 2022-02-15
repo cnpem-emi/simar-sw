@@ -1,3 +1,7 @@
+/*! @file wireless.c
+ * @brief Main starting point for wireless SIMAR
+ */
+
 #include <dirent.h>
 #include <hiredis/hiredis.h>
 #include <math.h>
@@ -53,27 +57,6 @@ void* blink_led() {
       nanosleep(&blink_period, NULL);
     }
   }
-}
-
-/**
- * @brief Checks if the alteration in pressure over one measurement is realistic
- *
- * @param[in] sensor : Sensor to check
- *
- * @return void
- */
-int8_t check_alteration(struct sensor_data sensor) {
-  if (sensor.data.pressure == 1100 || sensor.data.pressure < 1) {
-    syslog(LOG_CRIT,
-           "Sensor %s failed to respond with valid measurements, unlikely to "
-           "recover, reinitializing all sensors",
-           sensor.name);
-    exit(-3);
-  }
-
-  return sensor.past_pres == 0 ||
-         (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 &&
-          sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
 }
 
 int main(int argc, char* argv[]) {
