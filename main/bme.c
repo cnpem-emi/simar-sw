@@ -4,7 +4,6 @@
 
 #include <fcntl.h>
 #include <hiredis/hiredis.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
