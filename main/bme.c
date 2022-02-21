@@ -9,7 +9,7 @@
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
-#include <math.h>
+#include "../spi/common.h"
 #include "../utils/json/cJSON.h"
 
 #include "../bme280/common/common.h"
@@ -25,18 +25,19 @@ const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
 /**
  * @brief Updates door opening status
  *
- * Considering the closed server racks work under negative pressure, a
- * sustained "significant" rise in pressure may indicate a door opening.
- *
- * However, a change in temperature may (albeit slowly) alter the pressure,
- * so the best solution is to maintain a moving open/closed pressure average
- * and listen for sudden changes.
- *
  * @param[in] sensor : Pointer to sensor
  *
  * @return void
  */
 void get_open_iter(struct sensor_data* sensor) {
+  /* Considering the closed server racks work under negative pressure, a
+   sustained "significant" rise in pressure may indicate a door opening.
+
+   However, a change in temperature may (albeit slowly) alter the pressure,
+   so the best solution is to maintain a moving open/closed pressure average
+   and listen for sudden changes.
+  */
+
   // 0.23 refers to the standard deviation of the population over a period of 3 minutes
   if (sensor->average - sensor->data.pressure < -0.23 ||
       (sensor->open_average != 0 && sensor->open_average - sensor->data.pressure < 0.23)) {
@@ -55,50 +56,49 @@ void get_open_iter(struct sensor_data* sensor) {
 /**
  * @brief Updates moving average, door opening status
  *
- * The "average" pressure is important to determine sudden changes, however,
- * it'll only respond to gradual changes in order to deter statistical
- * abnormalities.
- *
- * As for the "open" average, it'll get reset every time the door is closed,
- * which is the default state.
- *
- * The closed door pressure moving average ignores sudden large pressure
- * increases, but is more sensitive to pressure decreases. The opposite happens
- * to the open door pressure moving average.
- *
  * @param[in] sensor : Pointer to sensor
  *
  * @return void
  */
 void update_open(struct sensor_data* sensor) {
   // Moves moving average window 1 position to the left to accomodate new value
+  double cache[WINDOW_SIZE];
+  for (int i = 0; i < WINDOW_SIZE; i++)
+    cache[i] = sensor->window[i];
+
+  for (int i = WINDOW_SIZE - 1; i > 0; i--)
+    sensor->window[i - 1] = cache[i];
+
+  /* The "average" pressure is important to determine sudden changes, however,
+  it'll only respond to gradual changes in order to deter statistical
+  abnormalities.
+
+  As for the "open" average, it'll get reset every time the door is closed,
+  which is the default state.
+
+  The closed door pressure moving average ignores sudden large pressure
+  increases, but is more sensitive to pressure decreases. The opposite happens
+  to the open door pressure moving average. */
+
+  double sum = 0;
+
+  for (int i = 0; i < WINDOW_SIZE - 1; i++)
+    sum += sensor->window[i];
 
   double diff = sensor->average - sensor->data.pressure;
   double open_diff = sensor->open_average - sensor->data.pressure;
 
-  if (fabs(sensor->data.pressure - sensor->past_pres) < 0.1) {
-    double cache[WINDOW_SIZE];
-    double sum = 0;
-
-    for (int i = 0; i < WINDOW_SIZE; i++)
-      cache[i] = sensor->window[i];
-
-    for (int i = WINDOW_SIZE - 1; i > 0; i--)
-      sensor->window[i - 1] = cache[i];
-
-    for (int i = 0; i < WINDOW_SIZE; i++)
-      sum += sensor->window[i];
-
-    sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
-
-    if ((sensor->is_open && sensor->strikes_closed == WINDOW_SIZE) ||
-        (!sensor->is_open && sensor->strikes_closed == 0)) {
-      if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open)) {
-        sensor->average = sum / WINDOW_SIZE;
-      } else if (sensor->is_open &&
-                 (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08))) {
-        sensor->open_average = sum / WINDOW_SIZE;
-      }
+  if ((sensor->is_open && sensor->strikes_closed == WINDOW_SIZE) ||
+      (!sensor->is_open && sensor->strikes_closed == 0)) {
+    if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open)) {
+      sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
+      sum += sensor->window[WINDOW_SIZE - 1];
+      sensor->average = sum / WINDOW_SIZE;
+    } else if (sensor->is_open &&
+               (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08))) {
+      sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
+      sum += sensor->window[WINDOW_SIZE - 1];
+      sensor->open_average = sum / WINDOW_SIZE;
     }
   }
 
