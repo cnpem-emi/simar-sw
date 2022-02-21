@@ -19,16 +19,16 @@ int8_t set_ext_addr(uint8_t addr);
  * @brief Parent struct for all valid sensors, including custom values to aid in door status calibration.
  */
 struct sensor_data {
-  double past_pres;
-  double average;
-  double open_average;
-  struct bme280_data data;
-  double window[WINDOW_SIZE];
-  struct bme280_dev dev;
-  uint8_t strikes_closed;
-  uint8_t is_open;
-  struct identifier id;
-  char name[MAX_NAME_LEN];
+  double past_pres; /**< Last pressure measurement (used for checking for abnormalities) */
+  double average; /**< Pressure moving average for closed doors */
+  double open_average; /**< Pressure moving average for open doors */
+  struct bme280_data data; /**< BME280 data struct */
+  double window[WINDOW_SIZE]; /**< Moving average window */
+  struct bme280_dev dev; /**< BME280 device struct */
+  uint8_t strikes_closed; /**< Door status threshold under/over count */
+  uint8_t is_open; /**< Door status */
+  struct identifier id; /**< Sensor identification struct */
+  char name[MAX_NAME_LEN]; /**< Sensor name */
 };
 
 int8_t check_alteration(struct sensor_data sensor);

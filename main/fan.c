@@ -24,7 +24,7 @@ double get_rpm(double runtime) {
 
   for (uint8_t i = 0; i < 100; i++) {
     int fd = open(AI_PIN, O_RDONLY);
-    if(read(fd, adc, 4) < 1) {
+    if (read(fd, adc, 4) < 1) {
       syslog(LOG_ERR, "No ADC found for fan sensor");
       exit(-2);
     }
