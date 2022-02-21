@@ -12,6 +12,7 @@ Protocols that are confirmed working in BBB kernel version >=4.14 with the addit
 - [x] SPI
 - [x] OneWire
 - [x] Analog (ADC/DAC)
+- [ ] CAN
 
 Features that are only available in the TI kernel >=5.10:
 - [x] PRU communication (used for glitch detection/power factor)
