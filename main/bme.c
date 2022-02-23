@@ -27,17 +27,16 @@ const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
  *
  * @param[in] sensor : Pointer to sensor
  *
+ * Considering the closed server racks work under negative pressure, a
+ * sustained "significant" rise in pressure may indicate a door opening.
+ *
+ * However, a change in temperature may (albeit slowly) alter the pressure,
+ * so the best solution is to maintain a moving open/closed pressure average
+ * and listen for sudden changes.
+ * 
  * @return void
  */
 void get_open_iter(struct sensor_data* sensor) {
-  /* Considering the closed server racks work under negative pressure, a
-   sustained "significant" rise in pressure may indicate a door opening.
-
-   However, a change in temperature may (albeit slowly) alter the pressure,
-   so the best solution is to maintain a moving open/closed pressure average
-   and listen for sudden changes.
-  */
-
   // 0.23 refers to the standard deviation of the population over a period of 3 minutes
   if (sensor->average - sensor->data.pressure < -0.23 ||
       (sensor->open_average != 0 && sensor->open_average - sensor->data.pressure < 0.23)) {
@@ -57,6 +56,17 @@ void get_open_iter(struct sensor_data* sensor) {
  * @brief Updates moving average, door opening status
  *
  * @param[in] sensor : Pointer to sensor
+ * 
+ * The "average" pressure is important to determine sudden changes, however,
+ * it'll only respond to gradual changes in order to deter statistical
+ * abnormalities.
+ *
+ * As for the "open" average, it'll get reset every time the door is closed,
+ * which is the default state.
+ *
+ * The closed door pressure moving average ignores sudden large pressure
+ * increases, but is more sensitive to pressure decreases. The opposite happens
+ * to the open door pressure moving average.
  *
  * @return void
  */
@@ -68,17 +78,6 @@ void update_open(struct sensor_data* sensor) {
 
   for (int i = WINDOW_SIZE - 1; i > 0; i--)
     sensor->window[i - 1] = cache[i];
-
-  /* The "average" pressure is important to determine sudden changes, however,
-  it'll only respond to gradual changes in order to deter statistical
-  abnormalities.
-
-  As for the "open" average, it'll get reset every time the door is closed,
-  which is the default state.
-
-  The closed door pressure moving average ignores sudden large pressure
-  increases, but is more sensitive to pressure decreases. The opposite happens
-  to the open door pressure moving average. */
 
   double sum = 0;
 
