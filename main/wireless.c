@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
       reply = (redisReply*)redisCommand(c, "SET wgen%d_%s %.3f EX 5", sensor_number, "temperature",
                                         sensor.data.temperature);
 
-      if (reply == NULL)
+      if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
         return DB_FAIL;
       freeReplyObject(reply);
 
@@ -214,7 +214,8 @@ int main(int argc, char* argv[]) {
         fprintf(file, "%s,%.4f,%.4f,%.4f\n", time_str, sensor.data.temperature,
                 sensor.data.pressure, sensor.data.humidity);
         fflush(file);
-      }
+    } else {
+      return(SENSOR_FAIL);    
     }
     nanosleep(&period, NULL);
   }
