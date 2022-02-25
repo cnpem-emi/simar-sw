@@ -215,6 +215,9 @@ int main(int argc, char* argv[]) {
                 sensor.data.pressure, sensor.data.humidity);
         fflush(file);
       }
+    } else {
+      syslog(LOG_ERR, "Invalid sensor reading");
+      return SENSOR_FAIL;
     }
     nanosleep(&period, NULL);
   }

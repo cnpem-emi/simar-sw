@@ -67,6 +67,7 @@ install: install_common
 install_wireless: install_common
 	sed -i -e "3cexport SIMAR_FOLDER=$$PWD" ./start/simar_startup.sh
 	sed -i -e '44csimar@wireless' ./start/simar_startup.sh -e '2cecho none > /sys/class/leds/beaglebone\:green\:usr3/trigger' ./start/simar_startup.sh
+	sed -i -e "8cExecStartPre=/bin/sleep 8" ./start/services/simar@.service
 	cp ./start/services/simar@.service /etc/systemd/system/.
 	cp ./start/conf/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 	cp ./start/conf/99-local.rules /etc/udev/rules.d/99-local.rules
