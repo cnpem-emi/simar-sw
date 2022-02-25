@@ -33,7 +33,7 @@ const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
  * However, a change in temperature may (albeit slowly) alter the pressure,
  * so the best solution is to maintain a moving open/closed pressure average
  * and listen for sudden changes.
- * 
+ *
  * @return void
  */
 void get_open_iter(struct sensor_data* sensor) {
@@ -56,7 +56,7 @@ void get_open_iter(struct sensor_data* sensor) {
  * @brief Updates moving average, door opening status
  *
  * @param[in] sensor : Pointer to sensor
- * 
+ *
  * The "average" pressure is important to determine sudden changes, however,
  * it'll only respond to gradual changes in order to deter statistical
  * abnormalities.

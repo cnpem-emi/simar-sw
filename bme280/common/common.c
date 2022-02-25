@@ -2,9 +2,9 @@
  * @brief Common functions for BME280 operation on AM335x
  */
 
+#include <math.h>
 #include <stdlib.h>
 #include <syslog.h>
-#include <math.h>
 
 #include "common.h"
 
@@ -19,7 +19,8 @@ uint8_t ext_addr = -1;
  * @retval -1 Invalid board address
  */
 int8_t set_ext_addr(uint8_t addr) {
-  if (addr > 15 || addr == 0) return -1;
+  if (addr > 15 || addr == 0)
+    return -1;
   ext_addr = addr;
   return 0;
 }
@@ -28,7 +29,7 @@ int8_t set_ext_addr(uint8_t addr) {
  * @brief Initializes sensor communication
  * @param[in] dev BME280/BMP280 device
  * @param[in] id Sensor identification struct (channel)
- * @param[in] addr Sensor address (0x76 or 0x77) 
+ * @param[in] addr Sensor address (0x76 or 0x77)
  * @retval 0 OK
  * @retval -2 Communication failure
  */
@@ -57,7 +58,8 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
 
   direct_mux(id->mux_id);
 
-  if(id->ext_mux_id >= 0) direct_ext_mux(id->ext_mux_id, ext_addr);
+  if (id->ext_mux_id >= 0)
+    direct_ext_mux(id->ext_mux_id, ext_addr);
 
   rslt = bme280_init(dev);
   if (rslt != BME280_OK) {
@@ -93,7 +95,8 @@ int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data) {
 
   direct_mux(id.mux_id);
 
-  if(id.ext_mux_id >= 0) direct_ext_mux(id.ext_mux_id, ext_addr);
+  if (id.ext_mux_id >= 0)
+    direct_ext_mux(id.ext_mux_id, ext_addr);
 
   rslt = bme280_get_sensor_data(BME280_ALL, comp_data, dev);
   comp_data->pressure *= 0.01;
@@ -117,7 +120,8 @@ int8_t check_alteration(struct sensor_data sensor) {
     exit(-3);
   }
 
-  return sensor.past_pres == 0 ||
-         (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 &&
-          sensor.data.pressure > 800 && sensor.data.pressure < 1000 && sensor.data.humidity != 100);
+  return sensor.data.pressure > 800 && sensor.data.pressure < 1000 &&
+         (sensor.past_pres == 0 ||
+          (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 &&
+           sensor.data.humidity != 100));
 }
