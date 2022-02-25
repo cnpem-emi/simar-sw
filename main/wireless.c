@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
       reply = (redisReply*)redisCommand(c, "SET wgen%d_%s %.3f EX 5", sensor_number, "temperature",
                                         sensor.data.temperature);
 
-      if (reply == NULL)
+      if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
         return DB_FAIL;
       freeReplyObject(reply);
 
