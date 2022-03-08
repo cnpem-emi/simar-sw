@@ -75,14 +75,8 @@ void update_open(struct sensor_data* sensor) {
   double cache[WINDOW_SIZE];
   for (int i = 0; i < WINDOW_SIZE; i++)
     cache[i] = sensor->window[i];
-
-  for (int i = WINDOW_SIZE - 1; i > 0; i--)
-    sensor->window[i - 1] = cache[i];
-
+    
   double sum = 0;
-
-  for (int i = 0; i < WINDOW_SIZE - 1; i++)
-    sum += sensor->window[i];
 
   double diff = sensor->average - sensor->data.pressure;
   double open_diff = sensor->open_average - sensor->data.pressure;
@@ -90,18 +84,32 @@ void update_open(struct sensor_data* sensor) {
   if ((sensor->is_open && sensor->strikes_closed == WINDOW_SIZE) ||
       (!sensor->is_open && sensor->strikes_closed == 0)) {
     if (sensor->average == 0 || (diff > -0.08 && diff < 0.1 && !sensor->is_open)) {
+      for (int i = WINDOW_SIZE - 1; i > 0; i--)
+        sensor->window[i - 1] = cache[i];
       sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
-      sum += sensor->window[WINDOW_SIZE - 1];
+      for (int i = 0; i < WINDOW_SIZE; i++)
+        sum += sensor->window[i];
       sensor->average = sum / WINDOW_SIZE;
     } else if (sensor->is_open &&
                (sensor->open_average == 0 || (open_diff > -0.1 && open_diff < 0.08))) {
+      for (int i = WINDOW_SIZE - 1; i > 0; i--)
+        sensor->window[i - 1] = cache[i];
       sensor->window[WINDOW_SIZE - 1] = sensor->data.pressure;
-      sum += sensor->window[WINDOW_SIZE - 1];
+      for (int i = 0; i < WINDOW_SIZE; i++)
+        sum += sensor->window[i];
       sensor->open_average = sum / WINDOW_SIZE;
     }
   }
 
+  uint8_t past_open = sensor->is_open;
+
   get_open_iter(sensor);
+
+  if (past_open != sensor->is_open) {
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+      sensor->window[i] = sensor->data.pressure;
+    }
+  }
 }
 
 int main(int argc, char* argv[]) {
