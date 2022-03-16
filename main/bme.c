@@ -75,7 +75,7 @@ void update_open(struct sensor_data* sensor) {
   double cache[WINDOW_SIZE];
   for (int i = 0; i < WINDOW_SIZE; i++)
     cache[i] = sensor->window[i];
-    
+
   double sum = 0;
 
   double diff = sensor->average - sensor->data.pressure;

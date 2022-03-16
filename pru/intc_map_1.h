@@ -59,8 +59,8 @@
  *
  */
 
-#include <stddef.h>
 #include <rsc_types.h>
+#include <stddef.h>
 
 /*
  * .pru_irq_map is used by the RemoteProc driver during initialization. However,
@@ -70,12 +70,12 @@
 #pragma DATA_SECTION(my_irq_rsc, ".pru_irq_map")
 #pragma RETAIN(my_irq_rsc)
 
-struct pru_irq_rsc my_irq_rsc  = {
-	0,			/* type = 0 */
-	1,			/* number of system events being mapped */
-	{
-		{19, 1, 1},	/* {sysevt, channel, host interrupt} */
-	},
+struct pru_irq_rsc my_irq_rsc = {
+    0, /* type = 0 */
+    1, /* number of system events being mapped */
+    {
+        {19, 1, 1}, /* {sysevt, channel, host interrupt} */
+    },
 };
 
 #endif /* _INTC_MAP_1_H_ */

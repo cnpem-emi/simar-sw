@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
   char message[2] = {16, 0};
   char buffer[3];
   double current[7];
-  double voltage = 0, high_current = 0, current_cache = 0;
+  double voltage = 0;
   uint32_t mode = 1;
   uint8_t bpw = 16;
   uint32_t speed = 1000000;
@@ -313,19 +313,11 @@ int main(int argc, char* argv[]) {
     // Current
     for (i = 1; i < 8; i++) {
       message[1] = 131 + i * 4;
-      high_current = 0;
-      for (j = 0; j < 100; j++) {
-        spi_transfer(message, buffer, 2);
-        spi_transfer(message, buffer, 2);
-        if (buffer[0] != 255 || buffer[1] != 255) {
-          current_cache = calc_voltage(buffer);
-          if (current_cache > high_current)
-            high_current = current_cache;
-        }
-      }
 
-      if (high_current > 0)
-        current[i - 1] = (high_current - 2.5) / 0.125;
+      spi_transfer(message, buffer, 2);
+      spi_transfer(message, buffer, 2);
+      if (buffer[0] != 255 || buffer[1] != 255)
+        current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.125;
     }
 
     // Throwaway

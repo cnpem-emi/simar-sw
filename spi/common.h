@@ -2,7 +2,6 @@
  * @brief Common declarations for SPI operations
  */
 
-
 #ifndef SPIUTIL_H
 #define SPIUTIL_H
 
