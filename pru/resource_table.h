@@ -89,7 +89,7 @@ struct my_resource_table resourceTable = {
         (uint8_t)0,                       // status
         (uint8_t)2,                       // num_of_vrings, only two is supported
         {(uint8_t)0, (uint8_t)0},         // reserved
-        /* no config data */
+                                          /* no config data */
     },
     /* the two vrings */
     {
