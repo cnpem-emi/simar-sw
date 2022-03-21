@@ -300,7 +300,7 @@ int main(int argc, char* argv[]) {
 
   pthread_mutex_unlock(&spi_mutex);
 
-  uint8_t i, read_fails = 0, j = 0, low_current;
+  uint8_t i, read_fails = 0, low_current;
   struct timeval timeout = {5, 0};
   redisSetTimeout(c, timeout);
 
