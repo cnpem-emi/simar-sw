@@ -20,11 +20,17 @@ all: directories $(PROGS) $(ASM_PROGS) $(OUT)/pru1.out
 
 directories: $(OUT)
 
-%: %.c
+%: %.c $(PRU_SWPKG)/PRU-Package-v6.1-Manifest.html
 	$(CC) $(CFLAGS) $< --output_file $@
 
 %: %.asm
 	$(CC) $(CFLAGS) $< --output_file $@
+
+$(PRU_SWPKG)/PRU-Package-v6.1-Manifest.html:
+	wget https://git.ti.com/cgit/pru-software-support-package/pru-software-support-package/snapshot/pru-software-support-package-6.0.1.tar.gz
+	mkdir -p /usr/lib/ti/pru-software-support-package
+	tar -xvzf pru-software-support-package-6.0.1.tar.gz -C /usr/lib/ti/pru-software-support-package --strip-components 1
+	rm -f pru-software-support-package-6.0.1.tar.gz
 
 $(OUT)/pru1.out: $(ASM_PROGS) $(PROGS)
 	$(LD) $(LDFLAGS) $^ --library=rpmsg_lib.lib -o $@

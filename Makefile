@@ -7,6 +7,12 @@ COMPILE.c = $(CC) $(CFLAGS)
 SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c)
 PROGS = $(patsubst %.c,%,$(SRCS))
 
+KVER = $(shell uname -r)
+KMAJ = $(shell echo $(KVER) | \
+sed -e 's/^\([0-9][0-9]*\)\.[0-9][0-9]*\.[0-9][0-9]*.*/\1/')
+KMIN = $(shell echo $(KVER) | \
+sed -e 's/^[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
+
 OUT = bin
 
 .PHONY: all directories clean install_common
@@ -35,7 +41,11 @@ $(OUT)/leak: /usr/local/lib/libhiredis.so main/leak.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/pru1.out:
-	$(MAKE) -C pru
+	@if [ $(KMAJ) -gt 4 ] && [ $(KMIN) -gt 9 ] ; then \
+            $(MAKE) -C pru ; \
+        else \
+            echo "Kernel version incompatible with remoteproc implementation, skipping PRU..."$
+        fi
 
 %: %.c
 	$(COMPILE.c) -c $^ -o $@
