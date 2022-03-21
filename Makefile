@@ -42,10 +42,10 @@ $(OUT)/leak: /usr/local/lib/libhiredis.so main/leak.c $(PROGS)
 
 $(OUT)/pru1.out:
 	@if [ $(KMAJ) -gt 4 ] && [ $(KMIN) -gt 9 ] ; then \
-            $(MAKE) -C pru ; \
-        else \
-            echo "Kernel version incompatible with remoteproc implementation, skipping PRU..."$
-        fi
+		$(MAKE) -C pru ; \
+    else \
+    	echo "Kernel version incompatible with remoteproc implementation, skipping PRU..." ; \
+	fi
 
 %: %.c
 	$(COMPILE.c) -c $^ -o $@
