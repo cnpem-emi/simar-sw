@@ -1,0 +1,13 @@
+[Unit]
+Description=WPA supplicant
+After=network.service
+
+[Service]
+Type=simple
+ExecStart=/root/simar-software/start/simar_wireless.sh
+Restart=always
+RestartSec=30
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target

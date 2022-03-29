@@ -82,6 +82,7 @@ install_wireless: install_common
 	cp ./start/conf/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
 	cp ./start/conf/99-local.rules /etc/udev/rules.d/99-local.rules
 	cp ./start/services/usb-mount@.service /etc/systemd/system/usb-mount@.service
+	cp ./start/services/wpa_supplicant.service /etc/systemd/system/wpa_supplicant.service
 	cp ./start/usb-mount.sh /usr/local/bin/usb-mount.sh
 	grep -qxF ':syslogtag, isequal, "simar\:" /var/log/simar/simar.log' /etc/rsyslog.conf || echo ':syslogtag, isequal, "simar:" /var/log/simar/simar.log' >> /etc/rsyslog.conf
 	service rsyslog restart
@@ -89,6 +90,7 @@ install_wireless: install_common
 	systemctl daemon-reload
 	systemctl start simar@wireless
 	systemctl enable simar@wireless
+	systemctl restart wpa_supplicant
 
 clean:
 	rm -rf $(PROGS) $(OUT)
