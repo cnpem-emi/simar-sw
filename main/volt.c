@@ -285,7 +285,7 @@ int main(int argc, char* argv[]) {
   int spi_fd = spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
 
   pthread_t cmd_thread;
-  // pthread_create(&cmd_thread, NULL, command_listener, NULL);
+  pthread_create(&cmd_thread, NULL, command_listener, NULL);
 
   pthread_t glitch_thread;
   pthread_create(&glitch_thread, NULL, glitch_counter, NULL);
@@ -344,7 +344,7 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < 7; i++) {
       if (current[i] > 100 || current[i] < -2)
         continue;
-      reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
+      reply = redisCommand(c, "SET ich_%d %.3f", 7-i, current[i]);
       freeReplyObject(reply);
 
       if (current[i] > 0.8)
