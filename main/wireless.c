@@ -14,7 +14,7 @@
 #include "../spi/common.h"
 
 redisContext *c, *local_c;
-const char servers[3][11] = {"10.0.38.46", "10.0.38.59", "10.0.38.42"};
+const char servers[4][11] = {"10.0.38.46", "10.0.38.59", "10.0.38.42", "10.128.255.5"};
 gpio_t led = {.pin = USR_3};
 int8_t sensor_number = -1;
 
@@ -139,8 +139,10 @@ int main(int argc, char* argv[]) {
   freeReplyObject(reply);
 
   syslog(LOG_NOTICE, "Starting readings...");
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 10; i++) {
     bme_read(&sensor.dev, &sensor.data);  // Perform "calibration" readings
+    sensor.dev.delay_us(500000, NULL);
+  }
 
   bbb_mmio_get_gpio(&led);
   bbb_mmio_set_output(led);

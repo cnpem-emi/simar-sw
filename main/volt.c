@@ -111,11 +111,9 @@ void* command_listener() {
 
   freeReplyObject(reply);
 
-  up_reply = redisCommand(c_remote, "EXISTS %s", name);
+  reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
 
-  if (up_reply->type == REDIS_REPLY_INTEGER && up_reply->integer) {
-    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
-
+  if (reply->type == REDIS_REPLY_ARRAY) {
     for (int i = 0; i < (int)reply->elements; i++) {
       if (reply->element[i]->str != NULL) {
         command = reply->element[i]->str[0] - '0';
@@ -132,9 +130,11 @@ void* command_listener() {
     }
   } else {
     // Sets default values if they do not exist already
+    freeReplyObject(reply);
     reply = redisCommand(c_remote, "HSET %s 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
+    freeReplyObject(reply);
+    reply = redisCommand(c_remote, "HSET %s:RB 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
   }
-  freeReplyObject(up_reply);
   freeReplyObject(reply);
 
   while (1) {
@@ -155,12 +155,11 @@ void* command_listener() {
     reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
     up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
-    if (reply->type == REDIS_REPLY_ARRAY) {
+    if (reply->type == REDIS_REPLY_ARRAY && up_reply->type == REDIS_REPLY_ARRAY) {
       for (int i = 0; i < (int)reply->elements; i++) {
         if (reply->element[i]->str != NULL) {
           command = reply->element[i]->str[0] - '0';
-          if (up_reply->element[i]->str == NULL ||
-              reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
+          if ((int)up_reply->elements == (int)reply->elements && up_reply->element[i]->str != NULL) {
             if (command != 1 && command != 0) {
               syslog(LOG_ERR, "Received malformed command: %d", command);
               rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
@@ -186,6 +185,7 @@ void* command_listener() {
     freeReplyObject(reply);
     freeReplyObject(up_reply);
 
+    /* Closed-loop temperature correction - NOT IMPLEMENTED
     reply = redisCommand(c_remote, "SMEMBERS %s:AT", name);
 
     if (reply->type == REDIS_REPLY_ARRAY) {
@@ -203,10 +203,11 @@ void* command_listener() {
         }
       }
     }
+    freeReplyObject(reply);
+    */
 
     select_module(0, 24);
 
-    freeReplyObject(reply);
     nanosleep(period, NULL);
   }
 }
@@ -220,7 +221,7 @@ void* glitch_counter() {
   const struct timespec* period = (const struct timespec[]){{0, 500000L}};
 
   prufd.fd = open(PRU1_DEVICE_NAME, O_RDWR);
-  char buf[512];
+  char buf[16];
   redisReply* reply;
 
   if (prufd.fd < 0) {
@@ -233,7 +234,7 @@ void* glitch_counter() {
     usleep(4999600);
     write(prufd.fd, "-", 1);
 
-    if (read(prufd.fd, buf, 512)) {
+    if (read(prufd.fd, buf, sizeof(buf))) {
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
       uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
@@ -245,7 +246,7 @@ void* glitch_counter() {
 
       reply = redisCommand(c, "SET frequency %d", frequency / 5);
       freeReplyObject(reply);
-      read(prufd.fd, buf, 16);
+      read(prufd.fd, buf, sizeof(buf));
     }
     nanosleep(period, NULL);
   }
@@ -334,7 +335,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    reply = redisCommand(c, "SET vch_%d %.3f", 0, voltage * VOLTAGE_CONST);
+    reply = redisCommand(c, "HSET vch %d %.3f", 0, voltage * VOLTAGE_CONST);
     if (reply == NULL)
       connect_local();
     freeReplyObject(reply);
@@ -344,7 +345,7 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < 7; i++) {
       if (current[i] > 100 || current[i] < -2)
         continue;
-      reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
+      reply = redisCommand(c, "HSET ich %d %.3f", i, current[i]);
       freeReplyObject(reply);
 
       if (current[i] > 0.8)
