@@ -19,10 +19,10 @@
 #define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
 #define PRU1_DEVICE_NAME "/dev/rpmsg_pru31"
 
-const char servers[12][16] = {
+const char servers[11][16] = {
     "10.0.38.59",    "10.0.38.46",    "10.0.38.42",    "10.128.153.81",
     "10.128.153.82", "10.128.153.83", "10.128.153.84", "10.128.153.85",
-    "10.128.153.86", "10.128.153.87", "10.128.153.88", "10.128.255.5"
+    "10.128.153.86", "10.128.153.87", "10.128.153.88",
 };
 
 redisContext *c, *c_remote;
@@ -111,9 +111,11 @@ void* command_listener() {
 
   freeReplyObject(reply);
 
-  reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
+  up_reply = redisCommand(c_remote, "EXISTS %s", name);
 
-  if (reply->type == REDIS_REPLY_ARRAY) {
+  if (up_reply->type == REDIS_REPLY_INTEGER && up_reply->integer) {
+    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
+
     for (int i = 0; i < (int)reply->elements; i++) {
       if (reply->element[i]->str != NULL) {
         command = reply->element[i]->str[0] - '0';
@@ -130,11 +132,9 @@ void* command_listener() {
     }
   } else {
     // Sets default values if they do not exist already
-    freeReplyObject(reply);
     reply = redisCommand(c_remote, "HSET %s 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
-    freeReplyObject(reply);
-    reply = redisCommand(c_remote, "HSET %s:RB 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
   }
+  freeReplyObject(up_reply);
   freeReplyObject(reply);
 
   while (1) {
@@ -155,11 +155,12 @@ void* command_listener() {
     reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
     up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
-    if (reply->type == REDIS_REPLY_ARRAY && up_reply->type == REDIS_REPLY_ARRAY) {
+    if (reply->type == REDIS_REPLY_ARRAY) {
       for (int i = 0; i < (int)reply->elements; i++) {
         if (reply->element[i]->str != NULL) {
           command = reply->element[i]->str[0] - '0';
-          if ((int)up_reply->elements == (int)reply->elements && up_reply->element[i]->str != NULL) {
+          if (up_reply->element[i]->str == NULL ||
+              reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
             if (command != 1 && command != 0) {
               syslog(LOG_ERR, "Received malformed command: %d", command);
               rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
@@ -185,7 +186,6 @@ void* command_listener() {
     freeReplyObject(reply);
     freeReplyObject(up_reply);
 
-    /* Closed-loop temperature correction - NOT IMPLEMENTED
     reply = redisCommand(c_remote, "SMEMBERS %s:AT", name);
 
     if (reply->type == REDIS_REPLY_ARRAY) {
@@ -203,11 +203,10 @@ void* command_listener() {
         }
       }
     }
-    freeReplyObject(reply);
-    */
 
     select_module(0, 24);
 
+    freeReplyObject(reply);
     nanosleep(period, NULL);
   }
 }
@@ -246,7 +245,7 @@ void* glitch_counter() {
 
       reply = redisCommand(c, "SET frequency %d", frequency / 5);
       freeReplyObject(reply);
-      read(prufd.fd, buf, sizeof(buf));
+      read(prufd.fd, buf, 16);
     }
     nanosleep(period, NULL);
   }
@@ -279,14 +278,14 @@ int main(int argc, char* argv[]) {
   double voltage = 0;
   uint32_t mode = 1;
   uint8_t bpw = 16;
-  uint32_t speed = 1000000;
+  uint32_t speed = 200000;
 
   pthread_mutex_init(&spi_mutex, NULL);
 
-  spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
+  int spi_fd = spi_open("/dev/spidev0.0", &mode, &bpw, &speed);
 
   pthread_t cmd_thread;
-  pthread_create(&cmd_thread, NULL, command_listener, NULL);
+  // pthread_create(&cmd_thread, NULL, command_listener, NULL);
 
   pthread_t glitch_thread;
   pthread_create(&glitch_thread, NULL, glitch_counter, NULL);
@@ -315,16 +314,16 @@ int main(int argc, char* argv[]) {
     for (i = 1; i < 8; i++) {
       message[1] = 131 + i * 4;
 
-      spi_transfer(message, buffer, 2);
-      spi_transfer(message, buffer, 2);
+      write(spi_fd, message, 2);
+      read(spi_fd, buffer, 2);
       if (buffer[0] != 255 || buffer[1] != 255)
         current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.125;
     }
 
     // Throwaway
-    spi_transfer("\x10\x83", buffer, 2);
-    spi_transfer("\x10\x83", buffer, 2);
     pthread_mutex_unlock(&spi_mutex);
+    write(spi_fd, "\x10\x83", 2);
+    read(spi_fd, buffer, 2);
 
     if (buffer[0] != 255 || buffer[1] != 255) {
       voltage = calc_voltage(buffer);
@@ -335,7 +334,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    reply = redisCommand(c, "HSET vch %d %.3f", 0, voltage * VOLTAGE_CONST);
+    reply = redisCommand(c, "SET vch_%d %.3f", 0, voltage * VOLTAGE_CONST);
     if (reply == NULL)
       connect_local();
     freeReplyObject(reply);
@@ -345,7 +344,7 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < 7; i++) {
       if (current[i] > 100 || current[i] < -2)
         continue;
-      reply = redisCommand(c, "HSET ich %d %.3f", i, current[i]);
+      reply = redisCommand(c, "SET ich_%d %.3f", i, current[i]);
       freeReplyObject(reply);
 
       if (current[i] > 0.8)

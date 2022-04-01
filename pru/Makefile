@@ -1,9 +1,11 @@
 PRU_SWPKG = /usr/lib/ti/pru-software-support-package
+PRU_CGT = /usr/share/ti/cgt-pru
 
 CC = clpru
 LD = lnkpru
 CFLAGS = --include_path=$(PRU_SWPKG)/include \
         --include_path=$(PRU_SWPKG)/include/am335x \
+		--include_path=$(PRU_CGT)/include \
         -v3 -O4 --opt_for_speed=5 --endian=little \
         --define=am3359 --define=pru1 --hardware_mac=on --verbose
 LDFLAGS = AM335x_PRU.cmd
