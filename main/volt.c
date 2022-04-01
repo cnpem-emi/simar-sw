@@ -317,7 +317,7 @@ int main(int argc, char* argv[]) {
       write(spi_fd, message, 2);
       read(spi_fd, buffer, 2);
       if (buffer[0] != 255 || buffer[1] != 255)
-        current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.125;
+        current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.66;
     }
 
     // Throwaway
@@ -344,7 +344,7 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < 7; i++) {
       if (current[i] > 100 || current[i] < -2)
         continue;
-      reply = redisCommand(c, "SET ich_%d %.3f", 7-i, current[i]);
+      reply = redisCommand(c, "SET ich_%d %.3f", 6 - i, current[i]);
       freeReplyObject(reply);
 
       if (current[i] > 0.8)
