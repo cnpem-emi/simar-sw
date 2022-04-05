@@ -18,6 +18,7 @@ const char servers[12][16] = {"10.0.38.59",    "10.0.38.46",    "10.0.38.42",   
                               "10.128.153.82", "10.128.153.83", "10.128.153.84", "10.128.153.85",
                               "10.128.153.86", "10.128.153.87", "10.128.153.88", "10.128.255.5"};
 gpio_t led = {.pin = USR_3};
+gpio_t dec_led = {.pin = USR_2};
 int8_t sensor_number = -1;
 
 uint8_t redis_connect() {
@@ -48,6 +49,9 @@ void* blink_led() {
     }
   } else {
     const struct timespec blink_period = {0, 750000000L};
+    if (sensor_number > 9) {
+      bbb_mmio_set_high(dec_led);
+    }
     for (;;) {
       for (int i = 0; i < sensor_number; i++) {
         bbb_mmio_set_high(led);
@@ -105,7 +109,7 @@ int main(int argc, char* argv[]) {
       freeReplyObject(reply);
       reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", sensor_preassigned);
 
-      if (!reply->str && sensor_preassigned < 9)
+      if (!reply->str && sensor_preassigned < 20)
         sensor_number = sensor_preassigned;
       else
         syslog(LOG_NOTICE, "Preassigned SIMAR ID was not available, resorting to available ID");
@@ -113,7 +117,7 @@ int main(int argc, char* argv[]) {
     freeReplyObject(reply);
 
     if (sensor_number == -1) {
-      for (int i = 1; i < 9; i++) {
+      for (int i = 1; i < 10; i++) {
         reply = (redisReply*)redisCommand(c, "GET wgen%d_pressure", i);
         if (!reply->str) {
           sensor_number = i;
@@ -148,6 +152,8 @@ int main(int argc, char* argv[]) {
 
   bbb_mmio_get_gpio(&led);
   bbb_mmio_set_output(led);
+  bbb_mmio_get_gpio(&dec_led);
+  bbb_mmio_set_output(dec_led);
 
   pthread_t led_thread;
   pthread_create(&led_thread, NULL, blink_led, NULL);
