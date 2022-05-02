@@ -334,7 +334,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    reply = redisCommand(c, "HSET volt %.3f", 0, voltage * VOLTAGE_CONST);
+    reply = redisCommand(c, "SET volt %.3f", 0, voltage * VOLTAGE_CONST);
     if (reply == NULL)
       connect_local();
     freeReplyObject(reply);
