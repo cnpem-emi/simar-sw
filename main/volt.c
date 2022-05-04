@@ -86,6 +86,7 @@ void* command_listener() {
   uint8_t delay_name = 21;
   uint8_t n_names = 0;
   uint8_t command;
+  char msg_command[1] = {0x00};
 
   const struct timespec* period = (const struct timespec[]){{2, 0}};
 
@@ -125,11 +126,12 @@ void* command_listener() {
           freeReplyObject(rb_reply);
           continue;
         }
-        pthread_mutex_lock(&spi_mutex);
-        write_data(15, command ? "\xff" : "\x00", 1);
-        pthread_mutex_unlock(&spi_mutex);
+        msg_command[0] += command << i;
       }
     }
+    pthread_mutex_lock(&spi_mutex);
+    write_data(15, msg_command, 1);
+    pthread_mutex_unlock(&spi_mutex);
   } else {
     // Sets default values if they do not exist already
     reply = redisCommand(c_remote, "HSET %s 0 1 1 1 2 1 3 1 4 1 5 1 6 1", name);
@@ -155,23 +157,25 @@ void* command_listener() {
     reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
     up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6 7", name);
 
+    msg_command[0] = 0x00;
+
     if (reply->type == REDIS_REPLY_ARRAY) {
       for (int i = 0; i < (int)reply->elements; i++) {
         if (reply->element[i]->str != NULL) {
           command = reply->element[i]->str[0] - '0';
+
+          if (command != 1 && command != 0) {
+            syslog(LOG_ERR, "Received malformed command: %d", command);
+            rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
+                                    up_reply->element[i]->str[0] - '0');
+            freeReplyObject(rb_reply);
+            continue;
+          }
+
+          msg_command[0] += command << i;
+
           if (up_reply->element[i]->str == NULL ||
               reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
-            if (command != 1 && command != 0) {
-              syslog(LOG_ERR, "Received malformed command: %d", command);
-              rb_reply = redisCommand(c_remote, "HSET %s %d %d", name, i,
-                                      up_reply->element[i]->str[0] - '0');
-              freeReplyObject(rb_reply);
-              continue;
-            }
-            pthread_mutex_lock(&spi_mutex);
-            write_data(15, command ? "\xff" : "\x00", 1);
-            pthread_mutex_unlock(&spi_mutex);
-
             syslog(LOG_NOTICE, "User %s switched outlet %d %s", reply->element[i]->str + 2, i,
                    command == 1 ? "on" : "off");
             rb_reply = redisCommand(c_remote, "HSET %s:RB %d %d", name, i, command);
@@ -179,6 +183,9 @@ void* command_listener() {
           }
         }
       }
+      pthread_mutex_lock(&spi_mutex);
+      write_data(15, msg_command, 1);
+      pthread_mutex_unlock(&spi_mutex);
     } else if (reply->type == REDIS_REPLY_ERROR) {
       connect_remote();
     }
@@ -186,27 +193,8 @@ void* command_listener() {
     freeReplyObject(reply);
     freeReplyObject(up_reply);
 
-    reply = redisCommand(c_remote, "SMEMBERS %s:AT", name);
-
-    if (reply->type == REDIS_REPLY_ARRAY) {
-      for (int i = 0; i < (int)reply->elements; i++) {
-        command = reply->element[i]->str[0] - '0';
-        if (command < 8 && command < n_names) {
-          rb_reply = redisCommand(c, "GET temperature_%s", names[command]);
-          if (rb_reply->type == REDIS_REPLY_STRING) {
-            pthread_mutex_lock(&spi_mutex);
-            // TODO: Refine check logic after discussing standard
-            write_data(15, atof(rb_reply->str) > 26 ? "\x01" : "\x00", 1);
-            pthread_mutex_unlock(&spi_mutex);
-          }
-          freeReplyObject(rb_reply);
-        }
-      }
-    }
-
     select_module(0, 24);
 
-    freeReplyObject(reply);
     nanosleep(period, NULL);
   }
 }
