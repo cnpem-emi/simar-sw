@@ -322,7 +322,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    reply = redisCommand(c, "SET vch_%d %.3f", 0, voltage * VOLTAGE_CONST);
+    reply = redisCommand(c, "SET volt %.3f", voltage * VOLTAGE_CONST);
     if (reply == NULL)
       connect_local();
     freeReplyObject(reply);
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
     for (i = 0; i < 7; i++) {
       if (current[i] > 100 || current[i] < -2)
         continue;
-      reply = redisCommand(c, "SET ich_%d %.3f", 6 - i, current[i]);
+      reply = redisCommand(c, "HSET ich %d %.3f", 6 - i, current[i]);
       freeReplyObject(reply);
 
       if (current[i] > 0.8)
