@@ -126,7 +126,7 @@ void* command_listener() {
           freeReplyObject(rb_reply);
           continue;
         }
-        msg_command[0] += command << i;
+        msg_command[0] += command << (i + 1);
       }
     }
     pthread_mutex_lock(&spi_mutex);
@@ -172,7 +172,7 @@ void* command_listener() {
             continue;
           }
 
-          msg_command[0] += command << i;
+          msg_command[0] += command << (i + 1);
 
           if (up_reply->element[i]->str == NULL ||
               reply->element[i]->str[0] != up_reply->element[i]->str[0]) {
