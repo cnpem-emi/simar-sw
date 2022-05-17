@@ -27,6 +27,7 @@ config-pin P8_45 pruin
 config-pin P8_46 pruout
 config-pin P8_44 pruout
 config-pin P8_43 pruin
+config-pin P8_41 pruin
 
 : '
 RETRIES=$(redis-cli get retries)
