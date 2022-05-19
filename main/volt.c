@@ -193,8 +193,6 @@ void* command_listener() {
     freeReplyObject(reply);
     freeReplyObject(up_reply);
 
-    select_module(0, 24);
-
     nanosleep(period, NULL);
   }
 }
@@ -322,10 +320,12 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    reply = redisCommand(c, "SET volt %.3f", voltage * VOLTAGE_CONST);
-    if (reply == NULL)
-      connect_local();
-    freeReplyObject(reply);
+    if(voltage * VOLTAGE_CONST != 0.0) {
+      reply = redisCommand(c, "SET volt %.3f", voltage * VOLTAGE_CONST);
+      if (reply == NULL)
+        connect_local();
+      freeReplyObject(reply);
+    }
 
     low_current = 1;
 
@@ -339,7 +339,7 @@ int main(int argc, char* argv[]) {
         low_current = 0;
     }
 
-    reply = redisCommand(c, "SET pfactor %.3f", low_current ? 1.0 : duty * 100.0);
+    reply = redisCommand(c, "SET pfactor %.3f", low_current ? 1.0 : duty);
     freeReplyObject(reply);
 
     nanosleep(inner_period, NULL);
