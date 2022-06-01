@@ -13,7 +13,7 @@
 
 #include "../spi/common.h"
 
-#define OUTLET_QUANTITY 8
+#define OUTLET_QUANTITY 7
 #define RESOLUTION 0.01953125
 #define VOLTAGE_CONST 68.8073472464
 #define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
@@ -115,7 +115,7 @@ void* command_listener() {
   up_reply = redisCommand(c_remote, "EXISTS %s", name);
 
   if (up_reply->type == REDIS_REPLY_INTEGER && up_reply->integer) {
-    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
+    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6", name);
 
     for (int i = 0; i < (int)reply->elements; i++) {
       if (reply->element[i]->str != NULL) {
@@ -154,8 +154,8 @@ void* command_listener() {
 
     freeReplyObject(reply);
 
-    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6 7", name);
-    up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6 7", name);
+    reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6", name);
+    up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6", name);
 
     msg_command[0] = 0x00;
 

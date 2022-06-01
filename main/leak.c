@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
 
   syslog(LOG_NOTICE, "Redis DB connected");
 
-  char dummy_data[1] = "";
   char digital_buffer[1];
 
   uint32_t mode = 3;
@@ -60,7 +59,7 @@ int main(int argc, char* argv[]) {
 
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
     syslog(LOG_ERR, "Could not open CAN socket");
-    return -2;
+    //return -2;
   }
 
   strcpy(ifr.ifr_name, "vcan0");
@@ -72,27 +71,24 @@ int main(int argc, char* argv[]) {
 
   if (bind(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
     syslog(LOG_ERR, "CAN binding error");
-    return -2;
+    //return -2;
   }
 
   frame.can_id = 0x555;
   frame.can_dlc = 5;
 
   for (;;) {
-    select_module(0, 2);
-    spi_transfer(dummy_data, dummy_data, 1);
-    select_module(0, 3);
-    spi_transfer(dummy_data, dummy_data, 1);
+    read_data(3, digital_buffer, 1);
 
     if (read(fd, digital_buffer, 1)) {
       for (int i = 0; i < 8; i++) {
         if (digital_buffer[0] >> i & 0b00000001) {
-          snprintf(frame.data, 4, "%d %d", i, 1);  // TODO: Decide what to write
+          /*snprintf(frame.data, 4, "%d %d", i, 1);  // TODO: Decide what to write
           if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
             syslog(LOG_ERR, "CAN communication error");
             return -2;
           }
-        }
+        }*/
         reply =
             redisCommand(c, "HSET leak_detector %d %d", i, ((digital_buffer[0] >> i) & 0b00000001));
         freeReplyObject(reply);

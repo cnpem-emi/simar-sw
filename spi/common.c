@@ -17,7 +17,7 @@ static volatile uint32_t* gpio_base[4] = {NULL};
 
 int _bits, _speed, _delay, _mode, fd;
 int mod_bits = 8;
-int mod_mode = 3;
+int mod_mode = SPI_MODE_3;
 
 gpio_t cs_pin = {.pin = P9_17};
 gpio_t ds_pin = {.pin = P9_14};
@@ -170,7 +170,7 @@ int calculate_parity(int x) {
 int spi_mod_comm(char* tx, char* rx, int len) {
   int ret;
 
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &mod_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &mod_bits);
@@ -190,7 +190,7 @@ int spi_mod_comm(char* tx, char* rx, int len) {
   ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
   bbb_mmio_set_high(ds_pin);
 
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &_bits);
@@ -244,7 +244,7 @@ int write_data(int address, char* data, int len) {
 
   select_module(address, 1);
 
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &mod_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &mod_bits);
@@ -252,11 +252,11 @@ int write_data(int address, char* data, int len) {
   bbb_mmio_set_high(cs_pin);
   bbb_mmio_set_low(cs_pin);
 
-  bbb_mmio_set_low(cs_pin);
-  ret = write(fd, data, len);
   bbb_mmio_set_high(cs_pin);
+  ret = write(fd, data, len);
+  bbb_mmio_set_low(cs_pin);
 
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &_bits);
@@ -273,26 +273,23 @@ int write_data(int address, char* data, int len) {
  * @retval <0 Failure
  */
 
-int read_data(int address, char* rx) {
+int read_data(int address, char* rx, int len) {
   int ret;
+  char dummy_data[1] = "";
 
   select_module(address, 2);
+  spi_transfer(dummy_data, dummy_data, 1);
+  select_module(address, 3);
+  spi_transfer(dummy_data, dummy_data, 1);
 
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &mod_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &mod_bits);
 
-  bbb_mmio_set_low(cs_pin);
-  bbb_mmio_set_high(cs_pin);
+  ret = read(fd, rx, len);
 
-  select_module(address, 3);
-
-  bbb_mmio_set_low(cs_pin);
-  ret = read(fd, rx, 1);
-  bbb_mmio_set_high(cs_pin);
-
-  if (_mode != 3)
+  if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &_bits);

@@ -124,7 +124,7 @@ void delay_mili(uint32_t ms);
 int select_module(int address, int module);
 int transfer_module(char* data, int len);
 int write_data(int address, char* data, int len);
-int read_data(int address, char* rx);
+int read_data(int address, char* rx, int len);
 int spi_mod_comm(char* tx, char* rx, int len);
 
 #endif
