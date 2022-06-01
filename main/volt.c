@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    if(voltage * VOLTAGE_CONST != 0.0) {
+    if (voltage * VOLTAGE_CONST != 0.0) {
       reply = redisCommand(c, "SET volt %.3f", voltage * VOLTAGE_CONST);
       if (reply == NULL)
         connect_local();

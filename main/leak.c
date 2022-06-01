@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
     syslog(LOG_ERR, "Could not open CAN socket");
-    //return -2;
+    // return -2;
   }
 
   strcpy(ifr.ifr_name, "vcan0");
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
 
   if (bind(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
     syslog(LOG_ERR, "CAN binding error");
-    //return -2;
+    // return -2;
   }
 
   frame.can_id = 0x555;
@@ -89,12 +89,12 @@ int main(int argc, char* argv[]) {
             return -2;
           }
         }*/
-        reply =
-            redisCommand(c, "HSET leak_detector %d %d", i, ((digital_buffer[0] >> i) & 0b00000001));
-        freeReplyObject(reply);
+          reply = redisCommand(c, "HSET leak_detector %d %d", i,
+                               ((digital_buffer[0] >> i) & 0b00000001));
+          freeReplyObject(reply);
+        }
       }
-    }
 
-    nanosleep(period, NULL);
+      nanosleep(period, NULL);
+    }
   }
-}
