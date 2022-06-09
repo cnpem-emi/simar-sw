@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
   openlog("simar", 0, LOG_LOCAL0);
 
   if (!--argc)
-    syslog(LOG_INFO, "You should consider using at least one custom name");
+    syslog(LOG_INFO, "No custom names given");
 
   redisContext *c, *c_remote;
   redisReply *reply, *reply_remote;
