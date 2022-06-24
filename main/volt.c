@@ -2,6 +2,7 @@
  * @brief Main starting point for AC board module
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <hiredis/hiredis.h>
 #include <pthread.h>
@@ -18,6 +19,7 @@
 #define VOLTAGE_CONST 68.8073472464
 #define PRU0_DEVICE_NAME "/dev/rpmsg_pru30"
 #define PRU1_DEVICE_NAME "/dev/rpmsg_pru31"
+#define ACTUATION_CHANNEL 3
 
 const char servers[11][16] = {
     "10.0.38.59",    "10.0.38.46",    "10.0.38.42",    "10.128.153.81",
@@ -29,6 +31,8 @@ redisContext *c, *c_remote;
 char name[72];
 pthread_mutex_t spi_mutex;
 double duty = 1;
+uint32_t glitch;
+uint32_t frequency;
 
 /**
  * @brief Connects to a local Redis server (or exits, in case none are available)
@@ -36,6 +40,7 @@ double duty = 1;
  */
 void connect_local() {
   do {
+    syslog(LOG_NOTICE, "Attempting to reconnect to local Redis database...");
     c = redisConnectWithTimeout("127.0.0.1", 6379, (struct timeval){1, 500000});
 
     if (c->err) {
@@ -50,6 +55,8 @@ void connect_local() {
     }
 
   } while (c->err);
+
+  redisSetTimeout(c, (struct timeval){0, 500000});
 }
 
 /**
@@ -59,6 +66,7 @@ void connect_local() {
 void connect_remote() {
   int server_i = 0;
   int server_amount = sizeof(servers) / sizeof(servers[0]);
+  syslog(LOG_NOTICE, "Attempting to reconnect to remote Redis database...");
 
   do {
     c_remote = redisConnectWithTimeout(servers[server_i], 6379, (struct timeval){1, 500000});
@@ -74,6 +82,8 @@ void connect_remote() {
       exit(-3);
     }
   } while (c_remote->err);
+
+  redisSetTimeout(c_remote, (struct timeval){0, 500000});
 }
 
 /**
@@ -82,9 +92,6 @@ void connect_remote() {
  */
 void* command_listener() {
   redisReply *reply, *up_reply, *rb_reply;
-  char names[8][64];
-  uint8_t delay_name = 21;
-  uint8_t n_names = 0;
   uint8_t command;
   char msg_command[1] = {0x00};
 
@@ -92,25 +99,6 @@ void* command_listener() {
 
   connect_remote();
   syslog(LOG_NOTICE, "Redis command DB connected");
-
-  up_reply = redisCommand(c, "LRANGE valid_sensors 0 -1");
-
-  if (up_reply->type == REDIS_REPLY_ARRAY) {
-    n_names = (int)up_reply->elements;
-    for (int i = 0; i < n_names; i++)
-      strncpy(names[i], up_reply->element[i]->str, 64);
-  }
-
-  freeReplyObject(up_reply);
-
-  reply = redisCommand(c, "HMGET device ip_address name");
-
-  if (reply != NULL && reply->type == REDIS_REPLY_ARRAY)
-    snprintf(name, 64, "SIMAR:%s:%s", reply->element[0]->str, reply->element[1]->str);
-  else
-    exit(-9);
-
-  freeReplyObject(reply);
 
   up_reply = redisCommand(c_remote, "EXISTS %s", name);
 
@@ -130,7 +118,7 @@ void* command_listener() {
       }
     }
     pthread_mutex_lock(&spi_mutex);
-    write_data(15, msg_command, 1);
+    write_data(ACTUATION_CHANNEL, msg_command, 1);
     pthread_mutex_unlock(&spi_mutex);
   } else {
     // Sets default values if they do not exist already
@@ -140,20 +128,6 @@ void* command_listener() {
   freeReplyObject(reply);
 
   while (1) {
-    reply = redisCommand(c, "HMGET device ip_address name");
-
-    if (delay_name > 20) {
-      delay_name = 0;
-      if (reply != NULL && reply->type == REDIS_REPLY_ARRAY)
-        snprintf(name, 64, "SIMAR:%s:%s", reply->element[0]->str, reply->element[1]->str);
-      else
-        connect_remote();
-    } else {
-      delay_name++;
-    }
-
-    freeReplyObject(reply);
-
     reply = redisCommand(c_remote, "HMGET %s 0 1 2 3 4 5 6", name);
     up_reply = redisCommand(c_remote, "HMGET %s:RB 0 1 2 3 4 5 6", name);
 
@@ -184,7 +158,7 @@ void* command_listener() {
         }
       }
       pthread_mutex_lock(&spi_mutex);
-      write_data(15, msg_command, 1);
+      write_data(ACTUATION_CHANNEL, msg_command, 1);
       pthread_mutex_unlock(&spi_mutex);
     } else if (reply->type == REDIS_REPLY_ERROR) {
       connect_remote();
@@ -207,7 +181,6 @@ void* glitch_counter() {
 
   prufd.fd = open(PRU1_DEVICE_NAME, O_RDWR);
   char buf[16];
-  redisReply* reply;
 
   if (prufd.fd < 0) {
     syslog(LOG_ERR, "Failed to communicate with PRU1");
@@ -222,15 +195,10 @@ void* glitch_counter() {
     if (read(prufd.fd, buf, sizeof(buf))) {
       double duty_up = (buf[11] << 24) | (buf[10] << 16) | (buf[9] << 8) | buf[8];
       double duty_down = (buf[15] << 24) | (buf[14] << 16) | (buf[13] << 8) | buf[12];
-      uint32_t frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
+      frequency = (buf[7] << 24) | (buf[6] << 16) | (buf[5] << 8) | buf[4];
       duty = duty_up / (duty_up + duty_down);
+      glitch = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
 
-      reply = redisCommand(c, "SET glitch %d",
-                           (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0]);
-      freeReplyObject(reply);
-
-      reply = redisCommand(c, "SET frequency %d", frequency / 5);
-      freeReplyObject(reply);
       read(prufd.fd, buf, 16);
     }
     nanosleep(period, NULL);
@@ -292,6 +260,15 @@ int main(int argc, char* argv[]) {
 
   syslog(LOG_NOTICE, "Main loop starting...");
 
+  reply = redisCommand(c, "HMGET device ip_address name");
+
+  if (reply != NULL && reply->type == REDIS_REPLY_ARRAY)
+    snprintf(name, 64, "SIMAR:%s:%s", reply->element[0]->str, reply->element[1]->str);
+  else
+    exit(-9);
+
+  freeReplyObject(reply);
+
   for (;;) {
     pthread_mutex_lock(&spi_mutex);
     transfer_module("\x01\x01", 2);
@@ -300,16 +277,35 @@ int main(int argc, char* argv[]) {
     for (i = 1; i < 8; i++) {
       message[1] = 131 + i * 4;
 
-      write(spi_fd, message, 2);
-      read(spi_fd, buffer, 2);
+      if (write(spi_fd, message, 2) < 1) {
+        syslog(LOG_CRIT,
+               "Communication error while writing to ADC, reading current from channel %d: %s", i,
+               strerror(errno));
+        return -2;
+      }
+
+      if (read(spi_fd, buffer, 2) < 1) {
+        syslog(LOG_CRIT, "Communication error while reading back current from channel %d: %s", i,
+               strerror(errno));
+        return -2;
+      }
       if (buffer[0] != 255 || buffer[1] != 255)
         current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.66;
     }
 
     // Throwaway
+    if (write(spi_fd, "\x10\x83", 2) < 1) {
+      syslog(LOG_CRIT,
+             "Communication error while writing to ADC, reading voltage from channel %d: %s", i,
+             strerror(errno));
+      return -2;
+    }
+
+    if (read(spi_fd, buffer, 2) < 1) {
+      syslog(LOG_CRIT, "Communication error while reading back voltage: %s", strerror(errno));
+      return -2;
+    }
     pthread_mutex_unlock(&spi_mutex);
-    write(spi_fd, "\x10\x83", 2);
-    read(spi_fd, buffer, 2);
 
     if (buffer[0] != 255 || buffer[1] != 255) {
       voltage = calc_voltage(buffer);
@@ -322,7 +318,7 @@ int main(int argc, char* argv[]) {
 
     if (voltage * VOLTAGE_CONST != 0.0) {
       reply = redisCommand(c, "SET volt %.3f", voltage * VOLTAGE_CONST);
-      if (reply == NULL)
+      if (reply == NULL || reply->type == REDIS_REPLY_ERROR)
         connect_local();
       freeReplyObject(reply);
     }
@@ -341,6 +337,14 @@ int main(int argc, char* argv[]) {
 
     reply = redisCommand(c, "SET pfactor %.3f", low_current ? 1.0 : duty);
     freeReplyObject(reply);
+
+    reply = redisCommand(c, "SET glitch %d", glitch);
+    freeReplyObject(reply);
+
+    if (frequency > 0) {
+      reply = redisCommand(c, "SET frequency %d", frequency / 5);
+      freeReplyObject(reply);
+    }
 
     nanosleep(inner_period, NULL);
   }
