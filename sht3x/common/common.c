@@ -38,8 +38,8 @@
  */
 
 #include "common.h"
-#include "../i2c/common.h"
-#include "arch_config.h"
+#include "../../i2c/common.h"
+#include "../arch_config.h"
 
 uint16_t sensirion_bytes_to_uint16_t(const uint8_t* bytes) {
   return (uint16_t)bytes[0] << 8 | (uint16_t)bytes[1];
@@ -138,7 +138,6 @@ int8_t sensirion_i2c_read_words_as_bytes(struct sht3x_sensor_data* sensor,
   /* check the CRC for each word */
   for (i = 0, j = 0; i < size; i += SENSIRION_WORD_SIZE + CRC8_LEN) {
     ret = sensirion_common_check_crc(&buf8[i], SENSIRION_WORD_SIZE, buf8[i + SENSIRION_WORD_SIZE]);
-    printf("%d\n", ret);
     if (ret != NO_ERROR)
       return ret;
 

@@ -21,7 +21,6 @@ bme
 wireless
 *.o
 bme2
-common
 pru1.out
 count
 bin/

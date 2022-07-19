@@ -45,7 +45,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #include "arch_config.h"
-#include "common.h"
+#include "common/common.h"
 
 /* all measurement commands return T (CRC) RH (CRC) */
 #if USE_SENSIRION_CLOCK_STRETCHING
@@ -107,7 +107,7 @@ int8_t sht3x_init(struct sht3x_sensor_data* sht, uint8_t addr) {
 int16_t sht3x_measure_blocking_read(struct sht3x_sensor_data* sht) {
   int16_t ret = sht3x_measure(sht);
   if (ret == STATUS_OK) {
-    delay_us(SHT3X_MEASUREMENT_DURATION_USEC);
+    delay_us(SHT3X_MEASUREMENT_DURATION_USEC, NULL);
     ret = sht3x_read(sht);
   }
   return ret;

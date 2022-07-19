@@ -1,5 +1,5 @@
 /*! @file common.c
- * @brief Common functions for BME280 operation on AM335x
+ * @brief Common functions for BMx device operation on AM335x
  */
 
 #include <math.h>

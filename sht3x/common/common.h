@@ -58,7 +58,7 @@ extern "C" {
 
 #define MAX_NAME_LEN 16
 
-#include "sht3x.h"
+#include "../sht3x.h"
 
 /**
  * @brief Convert an array of bytes to an uint16_t

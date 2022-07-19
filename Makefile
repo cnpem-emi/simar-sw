@@ -4,8 +4,8 @@ CC := gcc
 
 COMPILE.c = $(CC) $(CFLAGS)
 
-SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c)
-PROGS = $(patsubst %.c,%,$(SRCS))
+SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c utils/json/*.c sht3x/*.c sht3x/common/*.c)
+PROGS = $(patsubst %.c,%.o,$(SRCS))
 
 KVER = $(shell uname -r)
 KMAJ = $(shell echo $(KVER) | \
@@ -25,10 +25,10 @@ wireless: $(OUT)/wireless
 $(OUT):
 	mkdir -p $(OUT)
 
-$(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common 
+$(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common.o
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
-$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c utils/json/cJSON $(PROGS)
+$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
@@ -47,7 +47,7 @@ $(OUT)/pru1.out:
     	echo "Kernel version incompatible with remoteproc implementation, skipping PRU..." ; \
 	fi
 
-%: %.c
+%.o: %.c
 	$(COMPILE.c) -c $^ -o $@
 
 /usr/local/lib/libhiredis.so:

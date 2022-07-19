@@ -15,7 +15,7 @@ extern "C" {
 #include "../spi/common.h"
 
 /*!
- * @brief Identification/communication structure for BME280 sensors
+ * @brief Identification/communication structure for I2C devices
  */
 struct identifier {
   int8_t ext_mux_id;
