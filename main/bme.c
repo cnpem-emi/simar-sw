@@ -13,6 +13,7 @@
 #include "../utils/json/cJSON.h"
 
 #include "../bme280/common/common.h"
+#include "../sht3x/sht3x.h"
 
 // Set to 3 to enable the I2C Expansion Board
 #define ERROR_THRESHOLD 5
@@ -115,21 +116,19 @@ void update_open(struct bme_sensor_data* sensor) {
 int main(int argc, char* argv[]) {
   openlog("simar", 0, LOG_LOCAL0);
 
-  if (!--argc)
-    syslog(LOG_INFO, "No custom names given");
-
   redisContext *c, *c_remote;
   redisReply *reply, *reply_remote;
 
-  struct bme_sensor_data sensors[16];
+  struct bme_sensor_data bme_sensors[16];
+  struct sht3x_sensor_data sht_sensors[16];
 
-  sensors[0].dev.settings.osr_h = BME280_OVERSAMPLING_4X;
-  sensors[0].dev.settings.osr_p = BME280_OVERSAMPLING_16X;
-  sensors[0].dev.settings.osr_t = BME280_OVERSAMPLING_4X;
-  sensors[0].dev.settings.filter = BME280_FILTER_COEFF_OFF;
+  bme_sensors[0].dev.settings.osr_h = BME280_OVERSAMPLING_4X;
+  bme_sensors[0].dev.settings.osr_p = BME280_OVERSAMPLING_16X;
+  bme_sensors[0].dev.settings.osr_t = BME280_OVERSAMPLING_4X;
+  bme_sensors[0].dev.settings.filter = BME280_FILTER_COEFF_OFF;
 
-  uint8_t valid_i = 0;
-  uint8_t sensor_addr;
+  uint8_t valid_bme = 0;
+  uint8_t valid_sht = 0;
   uint8_t board_addr;
 
   int fd = open("/opt/device.json", O_RDONLY);
@@ -163,7 +162,7 @@ int main(int argc, char* argv[]) {
   }
 
   for (int i = 0; i < iface_board_len * 2; i++) {
-    if (valid_i < argc && strcmp(argv[i + 1], "-") == 0) {
+    if (valid_bme < argc && strcmp(argv[i + 1], "-") == 0) {
       for (int j = i + 1; j <= argc - 1; j++)
         argv[j] = argv[j + 1];
       argc--;
@@ -171,25 +170,37 @@ int main(int argc, char* argv[]) {
     }
 
     struct bme_sensor_data sensor;
-    sensor.dev = sensors[0].dev;
+    sensor.dev = bme_sensors[0].dev;
     sensor.id.mux_id = i % iface_board_len;
     sensor.id.ext_mux_id = -1;
 
-    sensor_addr = i < iface_board_len ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
+    uint8_t sensor_addr = i < iface_board_len ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
 
     if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
-      sensors[valid_i] = sensor;
-      sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
-      sensors[valid_i].average = sensors[valid_i].open_average = 0;
-      sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
+      bme_sensors[valid_bme] = sensor;
+      bme_sensors[valid_bme].dev.intf_ptr = &bme_sensors[valid_bme].id;
+      bme_sensors[valid_bme].average = bme_sensors[valid_bme].open_average = 0;
+      bme_sensors[valid_bme].strikes_closed = bme_sensors[valid_bme].is_open = 0;
 
-      if (valid_i < argc)
-        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "%s", argv[valid_i + 1]);
-      else
-        snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i % iface_board_len,
-                 sensor_addr);
+      snprintf(bme_sensors[valid_bme].name, MAX_NAME_LEN, "sensor_%d_%x", i % iface_board_len,
+               sensor_addr);
 
-      valid_i++;
+      syslog(LOG_INFO, "Initialized BMx device with address 0x%x at channel %d", sensor_addr,
+             sensor.id.mux_id);
+      valid_bme++;
+    } else {
+      struct sht3x_sensor_data sht_sensor = {.id.mux_id = i % iface_board_len, .id.ext_mux_id = -1};
+      uint8_t sht_sensor_addr = i < iface_board_len ? SHT3X_I2C_ADDR_DFLT : SHT3X_I2C_ADDR_ALT;
+
+      if (sht3x_init(&sht_sensor, sht_sensor_addr) == BME280_OK) {
+        sht_sensors[valid_sht] = sht_sensor;
+        snprintf(sht_sensors[valid_sht].name, MAX_NAME_LEN, "sensor_%d_%x", i % iface_board_len,
+                 sht_sensor_addr);
+
+        syslog(LOG_INFO, "Initialized SHT3x device with address 0x%x at channel %d",
+               sht_sensor_addr, sht_sensor.id.mux_id);
+        valid_sht++;
+      }
     }
   }
 
@@ -205,7 +216,7 @@ int main(int argc, char* argv[]) {
         continue;
 
       struct bme_sensor_data sensor;
-      sensor.dev = sensors[0].dev;
+      sensor.dev = bme_sensors[0].dev;
       sensor.id.mux_id = 3;
 
       /* Gets multiplexer channel ID for I2C extension board.
@@ -217,27 +228,45 @@ int main(int argc, char* argv[]) {
        */
       sensor.id.ext_mux_id = i < 4 ? i % 4 : (i % 4) << 2;
 
-      sensor_addr = BME280_I2C_ADDR_PRIM;
+      uint8_t sensor_addr = BME280_I2C_ADDR_PRIM;
+      uint8_t sht_sensor_addr = SHT3X_I2C_ADDR_DFLT;
 
       do {
         if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
-          sensors[valid_i] = sensor;
-          sensors[valid_i].dev.intf_ptr = &sensors[valid_i].id;
-          sensors[valid_i].average = sensors[valid_i].open_average = 0;
-          sensors[valid_i].strikes_closed = sensors[valid_i].is_open = 0;
+          bme_sensors[valid_bme] = sensor;
+          bme_sensors[valid_bme].dev.intf_ptr = &bme_sensors[valid_bme].id;
+          bme_sensors[valid_bme].average = bme_sensors[valid_bme].open_average = 0;
+          bme_sensors[valid_bme].strikes_closed = bme_sensors[valid_bme].is_open = 0;
 
-          snprintf(sensors[valid_i].name, MAX_NAME_LEN, "sensor_%d_%x", i + iface_board_len + 1,
-                   sensor_addr);
-          valid_i++;
+          snprintf(bme_sensors[valid_bme].name, MAX_NAME_LEN, "sensor_%d_%x",
+                   i + iface_board_len + 1, sensor_addr);
+
+          syslog(LOG_INFO,
+                 "Initialized BMx device on expansion board with address 0x%x at channel %d",
+                 sensor_addr, sensor.id.ext_mux_id);
+          valid_bme++;
+        } else {
+          struct sht3x_sensor_data sht_sensor = {.id.mux_id = i % iface_board_len,
+                                                 .id.ext_mux_id = -1};
+          if (sht3x_init(&sht_sensor, sht_sensor_addr) == BME280_OK) {
+            sht_sensors[valid_sht] = sht_sensor;
+            snprintf(sht_sensors[valid_sht].name, MAX_NAME_LEN, "sensor_%d_%x", i % iface_board_len,
+                     sht_sensor_addr);
+
+            syslog(LOG_INFO,
+                   "Initialized SHT3x on expansion board device with address 0x%x at channel %d",
+                   sht_sensor_addr, sht_sensor.id.ext_mux_id);
+            valid_sht++;
+          }
         }
-      } while (sensor_addr++ < 0x77);
+      } while (sensor_addr++ < BME280_I2C_ADDR_SEC && sht_sensor_addr++ < SHT3X_I2C_ADDR_ALT);
     }
 
     unselect_i2c_extender();
   }
 
-  if (!valid_i || (argc && valid_i < argc)) {
-    syslog(LOG_CRIT, "Not enough sensors found");
+  if (valid_bme < 1 && valid_sht < 1) {
+    syslog(LOG_CRIT, "No sensors found");
     return SENSOR_FAIL;
   }
 
@@ -302,23 +331,23 @@ int main(int argc, char* argv[]) {
   reply = (redisReply*)redisCommand(c, "DEL valid_sensors");
   freeReplyObject(reply);
 
-  for (int i = 0; i < valid_i; i++) {
-    reply = redisCommand(c, "HGET %s avg", sensors[i].name);
+  for (int i = 0; i < valid_bme; i++) {
+    reply = redisCommand(c, "HGET %s avg", bme_sensors[i].name);
 
     if (!reply->str) {
-      sensors[i].past_pres = 0;
+      bme_sensors[i].past_pres = 0;
 
       for (int k = 0; k < 3; k++) {
-        bme_read(&sensors[i].dev, &sensors[i].data);
+        bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
       }
 
       for (int j = 0; j < WINDOW_SIZE; j++) {
-        bme_read(&sensors[i].dev, &sensors[i].data);
+        bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
 
-        if (sensors[i].data.pressure > 850 && sensors[i].data.pressure < 1000) {
-          sensors[i].window[j] = sensors[i].past_pres = sensors[i].data.pressure;
+        if (bme_sensors[i].data.pressure > 850 && bme_sensors[i].data.pressure < 1000) {
+          bme_sensors[i].window[j] = bme_sensors[i].past_pres = bme_sensors[i].data.pressure;
         } else {
           --j;
           ++retries;
@@ -334,11 +363,11 @@ int main(int argc, char* argv[]) {
       syslog(LOG_NOTICE, "Pressure moving average for %d was %.3f\n", i, avg);
 
       avg += pressure_delta;
-      sensors[i].past_pres = avg;
+      bme_sensors[i].past_pres = avg;
 
       while (1) {
-        bme_read(&sensors[i].dev, &sensors[i].data);
-        if (sensors[i].data.pressure > 900 && sensors[i].data.pressure < 1000)
+        bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
+        if (bme_sensors[i].data.pressure > 900 && bme_sensors[i].data.pressure < 1000)
           break;
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
 
@@ -349,31 +378,31 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      reply = redisCommand(c, "HGET %s open", sensors[i].name);
+      reply = redisCommand(c, "HGET %s open", bme_sensors[i].name);
       syslog(LOG_NOTICE, "Sensor %d had open state %s", i, reply->str);
 
       if (!strcmp(reply->str, "1")) {
         syslog(LOG_NOTICE, "Sensor %d had open avg. %s", i, reply->str);
         freeReplyObject(reply);
-        reply = redisCommand(c, "HGET %s openavg", sensors[i].name);
+        reply = redisCommand(c, "HGET %s openavg", bme_sensors[i].name);
 
         if (reply->str && atof(reply->str)) {
-          sensors[i].open_average = atof(reply->str) + pressure_delta;
-          sensors[i].strikes_closed = WINDOW_SIZE;
-          sensors[i].average = sensors[i].open_average - 0.3;
+          bme_sensors[i].open_average = atof(reply->str) + pressure_delta;
+          bme_sensors[i].strikes_closed = WINDOW_SIZE;
+          bme_sensors[i].average = bme_sensors[i].open_average - 0.3;
           for (int j = 0; j < WINDOW_SIZE; j++)
-            sensors[i].window[j] = sensors[i].open_average;
+            bme_sensors[i].window[j] = bme_sensors[i].open_average;
         }
       } else {
         for (int j = 0; j < WINDOW_SIZE; j++)
-          sensors[i].window[j] = avg;
+          bme_sensors[i].window[j] = avg;
       }
     }
     freeReplyObject(reply);
 
-    reply = (redisReply*)redisCommand(c, "RPUSH valid_sensors %s", sensors[i].name);
+    reply = (redisReply*)redisCommand(c, "RPUSH valid_sensors %s", bme_sensors[i].name);
     freeReplyObject(reply);
-    update_open(&sensors[i]);
+    update_open(&bme_sensors[i]);
   }
 
   syslog(LOG_NOTICE, "Calibration data obtained");
@@ -383,39 +412,53 @@ int main(int argc, char* argv[]) {
   freeReplyObject(reply);
 
   while (1) {
-    for (i = 0; i < valid_i; i++) {
-      bme_read(&sensors[i].dev, &sensors[i].data);
-      if (check_alteration(sensors[i])) {
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "temperature",
-                                          sensors[i].data.temperature);
+    for (i = 0; i < valid_bme; i++) {
+      bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
+      if (check_alteration(bme_sensors[i])) {
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "temperature",
+                                          bme_sensors[i].data.temperature);
         if (reply == NULL)
           return DB_FAIL;
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "pressure",
-                                          sensors[i].data.pressure);
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "pressure",
+                                          bme_sensors[i].data.pressure);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "humidity",
-                                          sensors[i].data.humidity);
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "humidity",
+                                          bme_sensors[i].data.humidity);
         freeReplyObject(reply);
 
-        update_open(&sensors[i]);
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %d", sensors[i].name, "open",
-                                          sensors[i].is_open);
+        update_open(&bme_sensors[i]);
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %d", bme_sensors[i].name, "open",
+                                          bme_sensors[i].is_open);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "avg",
-                                          sensors[i].average);
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "avg",
+                                          bme_sensors[i].average);
         freeReplyObject(reply);
 
-        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sensors[i].name, "openavg",
-                                          sensors[i].open_average);
+        reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "openavg",
+                                          bme_sensors[i].open_average);
         freeReplyObject(reply);
 
-        sensors->past_pres = sensors[i].data.pressure;
+        bme_sensors->past_pres = bme_sensors[i].data.pressure;
       }
-      nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
+    }
+
+    for (i = 0; i < valid_sht; i++) {
+      sht3x_measure_blocking_read(&sht_sensors[i]);
+
+      reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sht_sensors[i].name, "temperature",
+                                        sht_sensors[i].data.temperature);
+
+      if (reply == NULL)
+        return DB_FAIL;
+      freeReplyObject(reply);
+
+      reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sht_sensors[i].name, "humidity",
+                                        sht_sensors[i].data.humidity);
+      freeReplyObject(reply);
     }
 
     if (iface_board_len == 3)
@@ -429,6 +472,7 @@ int main(int argc, char* argv[]) {
     }
 
     freeReplyObject(reply_remote);
+    nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
   }
 
   redisFree(c);

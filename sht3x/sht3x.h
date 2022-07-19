@@ -262,8 +262,7 @@ void humidity_to_tick(int32_t humidity, uint16_t* tick);
 /**
  * @brief Initializes sensor communication
  *
- * @param[in] dev               : SHT3X device
- * @param[in] id                : Sensor identification struct (channel)
+ * @param[in] sht               : Sensor struct
  * @param[in] addr              : Sensor address (0x44 or 0x45)
  * @retval 0 OK
  * @retval -2 Communication failure
