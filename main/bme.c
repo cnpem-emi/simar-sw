@@ -447,7 +447,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (i = 0; i < valid_sht; i++) {
-      sht3x_measure_blocking_read(&sht_sensors[i]);
+      if (sht3x_measure_blocking_read(&sht_sensors[i]) != BME280_OK)
+        return SENSOR_FAIL;
 
       reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sht_sensors[i].name, "temperature",
                                         sht_sensors[i].data.temperature);
