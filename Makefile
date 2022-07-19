@@ -28,7 +28,7 @@ $(OUT):
 $(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common 
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
-$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c utils/json/cJSON.o $(PROGS)
+$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c utils/json/cJSON $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
@@ -57,9 +57,6 @@ $(OUT)/pru1.out:
 	echo 'include /usr/local/lib' >> /etc/ld.so.conf
 	ldconfig
 	rm -rf hiredis
-
-utils/json/cJSON.o:
-	gcc -c utils/json/cJSON.c -o $@
 
 install_common:
 	sed -i -e "3cSIMAR_FOLDER=$$PWD" ./start/simar_startup.sh

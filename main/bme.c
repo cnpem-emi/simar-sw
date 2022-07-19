@@ -36,7 +36,7 @@ const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
  *
  * @return void
  */
-void get_open_iter(struct sensor_data* sensor) {
+void get_open_iter(struct bme_sensor_data* sensor) {
   // 0.23 refers to the standard deviation of the population over a period of 3 minutes
   if (sensor->average - sensor->data.pressure < -0.23 ||
       (sensor->open_average != 0 && sensor->open_average - sensor->data.pressure < 0.23)) {
@@ -70,7 +70,7 @@ void get_open_iter(struct sensor_data* sensor) {
  *
  * @return void
  */
-void update_open(struct sensor_data* sensor) {
+void update_open(struct bme_sensor_data* sensor) {
   // Moves moving average window 1 position to the left to accomodate new value
   double cache[WINDOW_SIZE];
   for (int i = 0; i < WINDOW_SIZE; i++)
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
   redisContext *c, *c_remote;
   redisReply *reply, *reply_remote;
 
-  struct sensor_data sensors[16];
+  struct bme_sensor_data sensors[16];
 
   sensors[0].dev.settings.osr_h = BME280_OVERSAMPLING_4X;
   sensors[0].dev.settings.osr_p = BME280_OVERSAMPLING_16X;
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    struct sensor_data sensor;
+    struct bme_sensor_data sensor;
     sensor.dev = sensors[0].dev;
     sensor.id.mux_id = i % iface_board_len;
     sensor.id.ext_mux_id = -1;
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
       if (i % 4 == 0)
         continue;
 
-      struct sensor_data sensor;
+      struct bme_sensor_data sensor;
       sensor.dev = sensors[0].dev;
       sensor.id.mux_id = 3;
 

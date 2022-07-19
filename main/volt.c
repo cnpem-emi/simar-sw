@@ -289,11 +289,12 @@ int main(int argc, char* argv[]) {
                strerror(errno));
         return -2;
       }
+
       if (buffer[0] != 255 || buffer[1] != 255)
         current[i - 1] = (calc_voltage(buffer) - 2.5) / 0.66;
     }
 
-    // Throwaway
+    // Throwaway value, only used to read 2 bytes from the ADC
     if (write(spi_fd, "\x10\x83", 2) < 1) {
       syslog(LOG_CRIT,
              "Communication error while writing to ADC, reading voltage from channel %d: %s", i,
