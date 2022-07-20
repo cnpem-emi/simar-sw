@@ -11,7 +11,6 @@
 #include <time.h>
 
 #include "../bme280/common/common.h"
-#include "../spi/common.h"
 
 redisContext *c, *local_c;
 const char servers[12][16] = {"10.0.38.59",    "10.0.38.46",    "10.0.38.42",    "10.128.153.81",
@@ -43,20 +42,20 @@ void* blink_led() {
   if (sensor_number == 99) {
     const struct timespec blink_period = {10, 0};
     for (;;) {
-      bbb_mmio_set_high(led);
+      mmio_set_high(led);
       nanosleep(&blink_period, NULL);
       // nanosl
     }
   } else {
     const struct timespec blink_period = {0, 750000000L};
     if (sensor_number > 9) {
-      bbb_mmio_set_high(dec_led);
+      mmio_set_high(dec_led);
     }
     for (;;) {
       for (int i = 0; i < sensor_number; i++) {
-        bbb_mmio_set_high(led);
+        mmio_set_high(led);
         nanosleep(&blink_delay, NULL);
-        bbb_mmio_set_low(led);
+        mmio_set_low(led);
         nanosleep(&blink_delay, NULL);
       }
       nanosleep(&blink_period, NULL);
@@ -150,10 +149,10 @@ int main(int argc, char* argv[]) {
     sensor.dev.delay_us(500000, NULL);
   }
 
-  bbb_mmio_get_gpio(&led);
-  bbb_mmio_set_output(led);
-  bbb_mmio_get_gpio(&dec_led);
-  bbb_mmio_set_output(dec_led);
+  mmio_get_gpio(&led);
+  mmio_set_output(led);
+  mmio_get_gpio(&dec_led);
+  mmio_set_output(dec_led);
 
   pthread_t led_thread;
   pthread_create(&led_thread, NULL, blink_led, NULL);

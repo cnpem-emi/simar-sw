@@ -27,3 +27,5 @@ bin/
 valgrind-out.txt
 pru/main
 clang-format-all
+html
+latex

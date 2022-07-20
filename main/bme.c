@@ -9,11 +9,10 @@
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
-#include "../spi/common.h"
-#include "../utils/json/cJSON.h"
 
 #include "../bme280/common/common.h"
 #include "../sht3x/sht3x.h"
+#include "../utils/json/cJSON.h"
 
 // Set to 3 to enable the I2C Expansion Board
 #define ERROR_THRESHOLD 5
@@ -168,8 +167,12 @@ int main(int argc, char* argv[]) {
     sensor.id.ext_mux_id = -1;
 
     uint8_t sensor_addr = i < iface_board_len ? BME280_I2C_ADDR_PRIM : BME280_I2C_ADDR_SEC;
+    uint8_t sensor_status = bme_init(&sensor.dev, &sensor.id, sensor_addr);
 
-    if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
+    if (sensor_status == BUS_FAIL)
+      return BUS_FAIL;
+
+    if (sensor_status == BME280_OK) {
       bme_sensors[valid_bme] = sensor;
       bme_sensors[valid_bme].dev.intf_ptr = &bme_sensors[valid_bme].id;
       bme_sensors[valid_bme].average = bme_sensors[valid_bme].open_average = 0;
@@ -225,7 +228,12 @@ int main(int argc, char* argv[]) {
       uint8_t sht_sensor_addr = SHT3X_I2C_ADDR_DFLT;
 
       do {
-        if (bme_init(&sensor.dev, &sensor.id, sensor_addr) == BME280_OK) {
+        uint8_t sensor_status = bme_init(&sensor.dev, &sensor.id, sensor_addr);
+
+        if (sensor_status == BUS_FAIL)
+          return BUS_FAIL;
+
+        if (sensor_status == BME280_OK) {
           bme_sensors[valid_bme] = sensor;
           bme_sensors[valid_bme].dev.intf_ptr = &bme_sensors[valid_bme].id;
           bme_sensors[valid_bme].average = bme_sensors[valid_bme].open_average = 0;
@@ -404,10 +412,13 @@ int main(int argc, char* argv[]) {
   reply = (redisReply*)redisCommand(c, "SET retries 0");
   freeReplyObject(reply);
 
+  uint8_t bme_errors = 0;
+
   while (1) {
     for (i = 0; i < valid_bme; i++) {
       if (bme_read(&bme_sensors[i].dev, &bme_sensors[i].data) == BME280_OK &&
-          check_alteration(bme_sensors[i])) {
+          check_alteration(bme_sensors[i]) == BME280_OK) {
+        bme_errors = 0;
         reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "temperature",
                                           bme_sensors[i].data.temperature);
         if (reply == NULL)
@@ -437,6 +448,9 @@ int main(int argc, char* argv[]) {
         freeReplyObject(reply);
 
         bme_sensors->past_pres = bme_sensors[i].data.pressure;
+      } else {
+        if (bme_errors++ > ERROR_THRESHOLD)
+          return SENSOR_FAIL;
       }
     }
 

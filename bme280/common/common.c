@@ -3,7 +3,6 @@
  */
 
 #include <math.h>
-#include <stdlib.h>
 #include <syslog.h>
 
 #include "common.h"
@@ -25,14 +24,14 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
 
   if (configure_mux()) {
     syslog(LOG_CRIT, "Failed to configure demux switching.\n");
-    exit(1);
+    return BUS_FAIL;
   }
 
   int8_t* fd = addr == 0x76 ? &fd_76 : &fd_77;
 
   if (i2c_open(fd, addr)) {
     syslog(LOG_CRIT, "Failed to open bus");
-    exit(SENSOR_FAIL);
+    return BUS_FAIL;
   }
 
   id->fd = *fd;
@@ -49,7 +48,7 @@ int8_t bme_init(struct bme280_dev* dev, struct identifier* id, uint8_t addr) {
 
   rslt = bme280_init(dev);
   if (rslt != BME280_OK)
-    return 2;
+    return rslt;
 
   settings_sel =
       BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL;
@@ -87,24 +86,11 @@ int8_t bme_read(struct bme280_dev* dev, struct bme280_data* comp_data) {
   return rslt;
 }
 
-/**
- * @brief Checks if the alteration in pressure over one measurement is realistic
- *
- * @param[in] sensor : Sensor to check
- *
- * @return void
- */
 int8_t check_alteration(struct bme_sensor_data sensor) {
-  if (sensor.data.pressure == 1100 || sensor.data.pressure < 1) {
-    syslog(LOG_CRIT,
-           "Sensor %s failed to respond with valid measurements, unlikely to "
-           "recover, reinitializing all sensors",
-           sensor.name);
-    exit(-3);
-  }
-
   return sensor.data.pressure > 800 && sensor.data.pressure < 1000 &&
-         (sensor.past_pres == 0 ||
-          (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 &&
-           sensor.data.humidity != 100));
+                 (sensor.past_pres == 0 ||
+                  (fabs(sensor.past_pres - sensor.data.pressure) < sensor.past_pres / 7 &&
+                   sensor.data.humidity != 100))
+             ? 0
+             : -1;
 }

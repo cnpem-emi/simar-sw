@@ -15,7 +15,7 @@ sed -e 's/^[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
 
 OUT = bin
 
-.PHONY: all directories clean install_common
+.PHONY: all directories clean install_common docs
 
 build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/leak $(OUT)/pru1.out
 
@@ -49,6 +49,10 @@ $(OUT)/pru1.out:
 
 %.o: %.c
 	$(COMPILE.c) -c $^ -o $@
+
+docs:
+	@doxygen docs/Doxyfile
+	@open docs/html/index.html
 
 /usr/local/lib/libhiredis.so:
 	git clone https://github.com/redis/hiredis.git

@@ -88,33 +88,33 @@ int bbb_dht_read(int type, gpio_t pin_o, double* humidity, double* temperature) 
   // Get GPIO pin and set it as an output.
   gpio_t pin;
   pin = pin_o;
-  if (bbb_mmio_get_gpio(&pin) < 0) {
+  if (mmio_get_gpio(&pin) < 0) {
     return DHT_ERROR_GPIO;
   }
-  bbb_mmio_set_output(pin);
+  mmio_set_output(pin);
 
   // Bump up process priority and change scheduler to try to try to make process
   // more 'real time'.
   set_max_priority();
 
   // Set pin high for ~500 milliseconds.
-  bbb_mmio_set_high(pin);
+  mmio_set_high(pin);
   sleep_milliseconds(500);
 
   // The next calls are timing critical and care should be taken
   // to ensure no unnecssary work is done below.
 
   // Set pin low for ~20 milliseconds.
-  bbb_mmio_set_low(pin);
+  mmio_set_low(pin);
   busy_wait_milliseconds(20);
 
   // Set pin as input.
-  bbb_mmio_set_input(pin);
+  mmio_set_input(pin);
 
   // Wait for DHT to pull pin low.
   uint32_t count = 0;
   int i;
-  while (bbb_mmio_input(pin)) {
+  while (mmio_input(pin)) {
     if (++count >= DHT_MAXCOUNT) {
       // Timeout waiting for response.
       set_default_priority();
@@ -125,7 +125,7 @@ int bbb_dht_read(int type, gpio_t pin_o, double* humidity, double* temperature) 
   // Record pulse widths for the expected result bits.
   for (i = 0; i < DHT_PULSES * 2; i += 2) {
     // Count how long pin is low and store in pulseCounts[i]
-    while (!bbb_mmio_input(pin)) {
+    while (!mmio_input(pin)) {
       if (++pulseCounts[i] >= DHT_MAXCOUNT) {
         // Timeout waiting for response.
         set_default_priority();
@@ -133,7 +133,7 @@ int bbb_dht_read(int type, gpio_t pin_o, double* humidity, double* temperature) 
       }
     }
     // Count how long pin is high and store in pulseCounts[i+1]
-    while (bbb_mmio_input(pin)) {
+    while (mmio_input(pin)) {
       if (++pulseCounts[i + 1] >= DHT_MAXCOUNT) {
         // Timeout waiting for response.
         set_default_priority();

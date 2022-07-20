@@ -40,6 +40,13 @@ make install
 make install_wireless
 ```
 
+### Generating documentation
+```
+make docs
+```
+
+The resulting documentation (in LaTeX and HTML) will be inside the `docs` folder. This will also automatically open the documentation in your browser.
+
 ## Important notes
 - If SPI isn't working, check the bus before anything else. Depending on your board, the first bus might be either 1.0 or 0.0
 - If OneWire fails to receive/transmit information, check your kernel version and `apt-get update && apt-get upgrade`

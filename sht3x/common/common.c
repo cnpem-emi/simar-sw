@@ -38,7 +38,6 @@
  */
 
 #include "common.h"
-#include "../../i2c/common.h"
 #include "../arch_config.h"
 
 uint16_t sensirion_bytes_to_uint16_t(const uint8_t* bytes) {

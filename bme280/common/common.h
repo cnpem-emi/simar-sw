@@ -31,6 +31,15 @@ struct bme_sensor_data {
   char name[MAX_NAME_LEN];
 };
 
+/**
+ * @brief Checks if the alteration in pressure over one measurement is realistic
+ *
+ * @param[in] sensor : Sensor to check
+ *
+ * @return Sensor data alteration status
+ * @retval 0 Sensor is not malfunctioning (outputting valid data)
+ * @retval -1 Sensor is possibily malfunctioning
+ */
 int8_t check_alteration(struct bme_sensor_data sensor);
 
 #endif

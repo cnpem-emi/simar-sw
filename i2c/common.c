@@ -22,14 +22,14 @@ uint8_t ext_addr = -1;
 
 void direct_mux(uint8_t id) {
   if ((id >> 0) & 1)
-    bbb_mmio_set_high(mux0);
+    mmio_set_high(mux0);
   else
-    bbb_mmio_set_low(mux0);
+    mmio_set_low(mux0);
 
   if ((id >> 1) & 1)
-    bbb_mmio_set_high(mux1);
+    mmio_set_high(mux1);
   else
-    bbb_mmio_set_low(mux1);
+    mmio_set_low(mux1);
 }
 
 void direct_ext_mux(uint8_t id) {
@@ -99,10 +99,10 @@ int8_t configure_mux() {
   int8_t rslt = 0;
 
   if (!pins_configured) {
-    rslt |= bbb_mmio_get_gpio(&mux0);
-    bbb_mmio_set_output(mux0);
-    rslt |= bbb_mmio_get_gpio(&mux1);
-    bbb_mmio_set_output(mux0);
+    rslt |= mmio_get_gpio(&mux0);
+    mmio_set_output(mux0);
+    rslt |= mmio_get_gpio(&mux1);
+    mmio_set_output(mux0);
 
     pins_configured = !rslt;
   }

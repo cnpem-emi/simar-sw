@@ -129,8 +129,8 @@ int16_t sht3x_read(struct sht3x_sensor_data* sht) {
   tick_to_temperature(words[0], &temperature);
   tick_to_humidity(words[1], &humidity);
 
-  sht->data.temperature = temperature;
-  sht->data.humidity = humidity;
+  sht->data.temperature = temperature / 1000.0;
+  sht->data.humidity = humidity / 1000.0;
 
   return ret;
 }

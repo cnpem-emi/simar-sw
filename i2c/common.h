@@ -28,7 +28,14 @@ struct identifier {
   uint8_t fd;
 };
 
+/**
+ * \ingroup i2c
+ * \defgroup i2cComm Communication
+ * @brief Communication methods
+ */
+
 /*!
+ * \ingroup i2cComm
  *  @brief Function for reading the sensor's registers through I2C bus.
  *
  *  @param[in] reg_addr       : Register address.
@@ -38,7 +45,7 @@ struct identifier {
  *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of
  * descriptors for interface related call backs.
  *
- *  @return Status of execution
+ *  @return Execution status
  *
  *  @retval 0 -> Success
  *  @retval -1 -> Failure
@@ -46,6 +53,7 @@ struct identifier {
 int8_t i2c_read(uint8_t reg_addr, uint8_t* reg_data, uint32_t length, void* intf_ptr);
 
 /*!
+ *  \ingroup i2cComm
  *  @brief Function for writing the sensor's registers through I2C bus.
  *
  *  @param[in] reg_addr       : Register address.
@@ -55,7 +63,7 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t* reg_data, uint32_t length, void* intf
  *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of
  * descriptors for interface related call backs
  *
- *  @return Status of execution
+ *  @return Execution status
  *
  *  @retval BME280_OK -> Success
  *  @retval BME280_E_COMM_FAIL -> Communication failure.
@@ -63,9 +71,27 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t* reg_data, uint32_t length, void* intf
  */
 int8_t i2c_write(uint8_t reg_addr, const uint8_t* reg_data, uint32_t length, void* intf_ptr);
 
+/*!
+ *  \ingroup i2cComm
+ *  @brief Opens communication with the I2C bus at a given address
+ *
+ *  @param[out] fd            : Pointer for the file descriptor
+ *  @param[in] addr           : Address of the connected I2C device
+ *
+ *  @return Execution status
+ *  @retval BME280_OK -> Success
+ *  @retval BME280_E_COMM_FAIL -> Communication failure.
+ */
 int8_t i2c_open(int8_t* fd, uint8_t addr);
 
 /**
+ * \ingroup i2c
+ * \defgroup i2cMux Multiplexer and Extension Boards
+ * @brief Generic methods for handling communication with the multiplexer and extension boards
+ */
+
+/**
+ * \ingroup i2cMux
  * @brief Sets the SPI extender board address
  * @param[in] addr Board address
  * @retval 0 OK
@@ -74,12 +100,14 @@ int8_t i2c_open(int8_t* fd, uint8_t addr);
 int8_t set_ext_addr(uint8_t addr);
 
 /**
+ * \ingroup i2cMux
  * @brief Unselects the I2C extender (and SPI extender, by proxy)
  * @return void
  */
 void unselect_i2c_extender();
 
 /**
+ * \ingroup i2cMux
  * @brief Selects an available I2C channel through the SPI and I2C extender boards (0 to 8)
  * @param[in] id Desired channel ID
  * @param[in] addr Designed extender board address
@@ -88,6 +116,7 @@ void unselect_i2c_extender();
 void direct_ext_mux(uint8_t id);
 
 /**
+ * \ingroup i2cMux
  * @brief Selects an available I2C channel through the digital interface board (0 to 4)
  * @param[in] id Desired channel ID
  * @return void
@@ -95,6 +124,7 @@ void direct_ext_mux(uint8_t id);
 void direct_mux(uint8_t id);
 
 /**
+ * \ingroup i2cMux
  * @brief Configures pins for the digital interface board multiplexing function
  * @return void
  */
@@ -103,6 +133,7 @@ int8_t configure_mux();
 /**
  * @brief Delays execution for n us
  * @param[in] period Microsseconds to stop for
+ * @param[in, out] intf_ptr Interface pointer, for BME driver compatibility (pass NULL)
  */
 void delay_us(uint32_t period, void* intf_ptr);
 
