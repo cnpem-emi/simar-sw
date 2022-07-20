@@ -28,7 +28,7 @@ const char servers[3][32] = {"10.0.38.46", "10.0.38.42", "10.0.38.59"};
  *
  * @param[in] sensor : Pointer to sensor
  *
- * Considering the closed server racks work under negative pressure, a
+ * @details Considering the closed server racks work under negative pressure, a
  * sustained "significant" rise in pressure may indicate a door opening.
  *
  * However, a change in temperature may (albeit slowly) alter the pressure,
@@ -58,7 +58,7 @@ void get_open_iter(struct bme_sensor_data* sensor) {
  *
  * @param[in] sensor : Pointer to sensor
  *
- * The "average" pressure is important to determine sudden changes, however,
+ * @details The "average" pressure is important to determine sudden changes, however,
  * it'll only respond to gradual changes in order to deter statistical
  * abnormalities.
  *
@@ -162,13 +162,6 @@ int main(int argc, char* argv[]) {
   }
 
   for (int i = 0; i < iface_board_len * 2; i++) {
-    if (valid_bme < argc && strcmp(argv[i + 1], "-") == 0) {
-      for (int j = i + 1; j <= argc - 1; j++)
-        argv[j] = argv[j + 1];
-      argc--;
-      continue;
-    }
-
     struct bme_sensor_data sensor;
     sensor.dev = bme_sensors[0].dev;
     sensor.id.mux_id = i % iface_board_len;
@@ -413,12 +406,13 @@ int main(int argc, char* argv[]) {
 
   while (1) {
     for (i = 0; i < valid_bme; i++) {
-      bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
-      if (check_alteration(bme_sensors[i])) {
+      if (bme_read(&bme_sensors[i].dev, &bme_sensors[i].data) == BME280_OK &&
+          check_alteration(bme_sensors[i])) {
         reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "temperature",
                                           bme_sensors[i].data.temperature);
         if (reply == NULL)
           return DB_FAIL;
+
         freeReplyObject(reply);
 
         reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", bme_sensors[i].name, "pressure",
@@ -455,6 +449,7 @@ int main(int argc, char* argv[]) {
 
       if (reply == NULL)
         return DB_FAIL;
+
       freeReplyObject(reply);
 
       reply = (redisReply*)redisCommand(c, "HSET %s %s %.3f", sht_sensors[i].name, "humidity",

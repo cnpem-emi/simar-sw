@@ -10,6 +10,8 @@ You can lint your code with `clang-tidy --config-file=.clang-tidy *.c`.
 We're using Chromium's style, with a maximum line length of 100 columns.
 
 You can format your code with `clang-format -style=file -i file.c`.
+
+The "easy" path is to use [clang-format-all](https://github.com/eklitzke/clang-format-all), by downloading it, running `chmod +x clang-format-all` and then `./clang-format-all .`
 ### Python
 Although few Python scripts are used (in the `python` folder), they follow the described flake8 and Black configs in the folder. Use `flake8 .` and `black`.
 

@@ -63,7 +63,7 @@ extern "C" {
 /**
  * @brief Convert an array of bytes to an uint16_t
  *
- * Convert an array of bytes received from the sensor in big-endian/MSB-first
+ * @details Convert an array of bytes received from the sensor in big-endian/MSB-first
  * format to an uint16_t value in the correct system-endianness.
  *
  * @param[in] bytes         An array of at least two bytes (MSB first)
@@ -74,7 +74,7 @@ uint16_t sensirion_bytes_to_uint16_t(const uint8_t* bytes);
 /**
  * @brief Convert an array of bytes to an uint32_t
  *
- * Convert an array of bytes received from the sensor in big-endian/MSB-first
+ * @details Convert an array of bytes received from the sensor in big-endian/MSB-first
  * format to an uint32_t value in the correct system-endianness.
  *
  * @param[in] bytes         An array of at least four bytes (MSB first)
@@ -85,7 +85,7 @@ uint32_t sensirion_bytes_to_uint32_t(const uint8_t* bytes);
 /**
  * @brief Convert an array of bytes to a float
  *
- * Convert an array of bytes received from the sensor in big-endian/MSB-first
+ * @details Convert an array of bytes received from the sensor in big-endian/MSB-first
  * format to an float value in the correct system-endianness.
  *
  * @param[in] bytes         An array of at least four bytes (MSB first)

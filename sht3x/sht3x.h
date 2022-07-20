@@ -38,6 +38,15 @@
  * interface. It supports measurements without clock stretching only.
  */
 
+/*!
+ * @defgroup sht3x SHT3x
+ * @brief <a
+ * href="https://sensirion.com/us/products/catalog/SHT31-ARP-B/">Product
+ * Overview</a> and  <a
+ * href="https://github.com/Sensirion/embedded-sht/tree/master/sht3x">Sensor API Source
+ * Code</a>
+ */
+
 #ifndef SHT3X_H
 #define SHT3X_H
 
@@ -107,8 +116,27 @@ typedef enum _sht3x_alert_thd {
 } sht3x_alert_thd_t;
 
 /**
+ * \ingroup sht3x
+ * \defgroup sht3xInit Initialization
+ * @brief Initialize the sensor and device structure
+ */
+
+/**
+ * \ingroup sht3xInit
+ * @brief Initializes sensor communication
+ *
+ * @param[in] sht               : Sensor struct
+ * @param[in] addr              : Sensor address (0x44 or 0x45)
+ * @retval 0 OK
+ * @retval -2 Communication failure
+ */
+int8_t sht3x_init(struct sht3x_sensor_data* sht, uint8_t addr);
+
+/**
+ * \ingroup sht3xInit
  * @brief Detects if a sensor is connected by reading out the ID register.
- * If the sensor does not answer or if the answer is not the expected value,
+ *
+ * @details If the sensor does not answer or if the answer is not the expected value,
  * the test fails.
  *
  * @param[in] sensor                : Sensor Struct
@@ -137,11 +165,19 @@ int16_t sht3x_get_status(struct sht3x_sensor_data* sensor, uint16_t* status);
 int16_t sht3x_clear_status(struct sht3x_sensor_data* sensor);
 
 /**
- * @brief Starts a measurement and then reads out the results. This function
- * blocks while the measurement is in progress. The duration of the measurement
- * depends on the sensor in use, please consult the datasheet. Temperature is
- * returned in [degree Celsius], multiplied by 1000, and relative humidity in
- * [percent relative humidity], multiplied by 1000.
+ * \ingroup sht3x
+ * \defgroup sht3xSensorData Sensor Data
+ * @brief Data processing of sensor
+ */
+
+/**
+ * \ingroup sht3xSensorData
+ * @brief Starts a measurement and then reads out the results.
+ *
+ * @details This function blocks while the measurement is in progress.
+ * The duration of the measurement depends on the sensor in use, please consult
+ * the datasheet. Temperature is returned in [degree Celsius], multiplied by 1000,
+ * and relative humidity in [percent relative humidity], multiplied by 1000.
  *
  * @param[in, out] sensor           : Sensor struct
  *
@@ -150,7 +186,10 @@ int16_t sht3x_clear_status(struct sht3x_sensor_data* sensor);
 int16_t sht3x_measure_blocking_read(struct sht3x_sensor_data* sensor);
 
 /**
- * @brief Starts a measurement in high precision mode. Use sht3x_read() to read
+ * \ingroup sht3xSensorData
+ * @brief Starts a measurement in high precision mode.
+ *
+ * @details Use sht3x_read() to read
  * out the values, once the measurement is done. The duration of the measurement
  * depends on the sensor in use, please consult the datasheet.
  *
@@ -161,7 +200,10 @@ int16_t sht3x_measure_blocking_read(struct sht3x_sensor_data* sensor);
 int16_t sht3x_measure(struct sht3x_sensor_data* sensor);
 
 /**
- * @brief Reads out the results of a measurement that was previously started by
+ * \ingroup sht3xSensorData
+ * @brief Reads out the results of a measurement
+ *
+ * @details Reads out results of a measurement that was previously started by
  * sht3x_measure(). If the measurement is still in progress, this function
  * returns an error.
  * Temperature is returned in [degree Celsius], multiplied by 1000,
@@ -174,6 +216,13 @@ int16_t sht3x_measure(struct sht3x_sensor_data* sensor);
 int16_t sht3x_read(struct sht3x_sensor_data* sensor);
 
 /**
+ * \ingroup sht3x
+ * \defgroup sht3xSensorPower Sensor Power
+ * @brief Generic API for configuring sensor power mode
+ */
+
+/**
+ * \ingroup sht3xSensorPower
  * @brief Enable or disable the SHT's low power mode
  *
  * @param[in] enable_low_power_mode : 1 to enable low power mode, 0 to disable
@@ -181,6 +230,7 @@ int16_t sht3x_read(struct sht3x_sensor_data* sensor);
 void sht3x_enable_low_power_mode(uint8_t enable_low_power_mode);
 
 /**
+ * \ingroup sht3xSensorPower
  * @brief Set the desired sensor's operating power mode
  *
  * @param[in] mode              : Power mode selector
@@ -198,6 +248,13 @@ void sht3x_set_power_mode(sht3x_measurement_mode_t mode);
 int16_t sht3x_read_serial(struct sht3x_sensor_data* sensor, uint32_t* serial);
 
 /**
+ * \ingroup sht3x
+ * \defgroup sht3xSensorSettings Sensor Settings
+ * @brief Generic API for accessing sensor settings
+ */
+
+/**
+ * \ingroup sht3xSensorSettings
  * @brief Set target temperature and humidity alert threshold
  *
  * @param[in] sensor            : The sensor address
@@ -213,6 +270,7 @@ int16_t sht3x_set_alert_thd(struct sht3x_sensor_data* sensor,
                             int32_t temperature);
 
 /**
+ * \ingroup sht3xSensorSettings
  * @brief Get target temperature and humidity alert threshold
  *
  * @param[in]  addr             : The sensor address
@@ -258,16 +316,6 @@ void temperature_to_tick(int32_t temperature, uint16_t* tick);
  * @param[out] tick              : Sensor ADC ticks
  */
 void humidity_to_tick(int32_t humidity, uint16_t* tick);
-
-/**
- * @brief Initializes sensor communication
- *
- * @param[in] sht               : Sensor struct
- * @param[in] addr              : Sensor address (0x44 or 0x45)
- * @retval 0 OK
- * @retval -2 Communication failure
- */
-int8_t sht3x_init(struct sht3x_sensor_data* sht, uint8_t addr);
 
 #ifdef __cplusplus
 }

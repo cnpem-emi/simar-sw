@@ -20,11 +20,6 @@ int8_t pins_configured = 0;
 
 uint8_t ext_addr = -1;
 
-/**
- * @brief Selects an available I2C channel through the digital interface board (0 to 4)
- * @param[in] id Desired channel ID
- * @return void
- */
 void direct_mux(uint8_t id) {
   if ((id >> 0) & 1)
     bbb_mmio_set_high(mux0);
@@ -37,12 +32,6 @@ void direct_mux(uint8_t id) {
     bbb_mmio_set_low(mux1);
 }
 
-/**
- * @brief Selects an available I2C channel through the SPI and I2C extender boards (0 to 8)
- * @param[in] id Desired channel ID
- * @param[in] addr Designed extender board address
- * @return void
- */
 void direct_ext_mux(uint8_t id) {
   char* rx;
   rx = malloc(1 * sizeof(char));
@@ -55,12 +44,6 @@ void direct_ext_mux(uint8_t id) {
   free(rx);
 }
 
-/**
- * @brief Sets the SPI extender board address
- * @param[in] addr Board address
- * @retval 0 OK
- * @retval -1 Invalid board address
- */
 int8_t set_ext_addr(uint8_t addr) {
   if (addr > 15 || addr == 0)
     return -1;
@@ -68,22 +51,6 @@ int8_t set_ext_addr(uint8_t addr) {
   return 0;
 }
 
-/*!
- *  @brief Function for reading the sensor's registers through I2C bus.
- *
- *  @param[in] reg_addr       : Register address.
- *  @param[out] data          : Pointer to the data buffer to store the read
- * data.
- *  @param[in] len            : No of bytes to read.
- *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of
- * descriptors for interface related call backs.
- *
- *  @return Status of execution
- *
- *  @retval 0 -> Success
- *  @retval -1 -> Failure
- *
- */
 int8_t i2c_read(uint8_t reg_addr, uint8_t* reg_data, uint32_t length, void* intf_ptr) {
   struct identifier id;
   id = *((struct identifier*)intf_ptr);
@@ -94,22 +61,6 @@ int8_t i2c_read(uint8_t reg_addr, uint8_t* reg_data, uint32_t length, void* intf
   return read(id.fd, reg_data, length) < 0 ? -1 : 0;
 }
 
-/*!
- *  @brief Function for writing the sensor's registers through I2C bus.
- *
- *  @param[in] reg_addr       : Register address.
- *  @param[in] data           : Pointer to the data buffer whose value is to be
- * written.
- *  @param[in] len            : No of bytes to write.
- *  @param[in, out] intf_ptr  : Void pointer that can enable the linking of
- * descriptors for interface related call backs
- *
- *  @return Status of execution
- *
- *  @retval BME280_OK -> Success
- *  @retval BME280_E_COMM_FAIL -> Communication failure.
- *
- */
 int8_t i2c_write(uint8_t reg_addr, const uint8_t* reg_data, uint32_t length, void* intf_ptr) {
   uint8_t* buf;
 
@@ -135,10 +86,6 @@ int8_t i2c_write(uint8_t reg_addr, const uint8_t* reg_data, uint32_t length, voi
   return 0;
 }
 
-/**
- * @brief Unselects the I2C extender (and SPI extender, by proxy)
- * @return void
- */
 void unselect_i2c_extender() {
   char* rx;
   rx = malloc(1 * sizeof(char));
@@ -148,10 +95,6 @@ void unselect_i2c_extender() {
   free(rx);
 }
 
-/**
- * @brief Configures pins for the digital interface board multiplexing function
- * @return void
- */
 int8_t configure_mux() {
   int8_t rslt = 0;
 
@@ -167,10 +110,6 @@ int8_t configure_mux() {
   return rslt;
 }
 
-/**
- * @brief Delays execution for n us
- * @param[in] period Microsseconds to stop for
- */
 void delay_us(uint32_t period, void* intf_ptr) {
   nanosleep((const struct timespec[]){{0, period * 1000}}, NULL);
 }
