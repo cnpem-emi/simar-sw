@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
       sensor.id.mux_id = 3;
 
       /* Gets multiplexer channel ID for I2C extension board.
-       *  Up to the fourth channel, only the first mux. is used, which
+       *  Up to the fourth channel, only the first mux is used, which
        *  is selected by the first pair of bits (from LSB).
        *  From the fourth channel onwards, the second mux. is used.
        *  Channels xx00 and 00xx cannot be used, as they are currently
@@ -338,14 +338,17 @@ int main(int argc, char* argv[]) {
     if (!reply->str) {
       bme_sensors[i].past_pres = 0;
 
+      // First 3 readouts are discarded
       for (int k = 0; k < 3; k++) {
         bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
       }
 
       for (int j = 0; j < WINDOW_SIZE; j++) {
-        bme_read(&bme_sensors[i].dev, &bme_sensors[i].data);
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
+        if(bme_read(&bme_sensors[i].dev, &bme_sensors[i].data) != BME280_OK) {
+          continue;
+        }
 
         if (bme_sensors[i].data.pressure > 850 && bme_sensors[i].data.pressure < 1000) {
           bme_sensors[i].window[j] = bme_sensors[i].past_pres = bme_sensors[i].data.pressure;

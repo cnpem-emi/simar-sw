@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
   openlog("simar_bme", 0, LOG_LOCAL0);
 
   redisReply* reply;
-  struct sensor_data sensor;
+  struct bme_sensor_data sensor;
   syslog(LOG_NOTICE, "Starting up...");
 
   sensor.dev.settings.osr_h = BME280_OVERSAMPLING_4X;
