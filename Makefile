@@ -4,8 +4,8 @@ CC := gcc
 
 COMPILE.c = $(CC) $(CFLAGS)
 
-SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c)
-PROGS = $(patsubst %.c,%,$(SRCS))
+SRCS = $(wildcard i2c/*.c spi/*.c bme280/*.c bme280/common/*.c utils/json/*.c sht3x/*.c sht3x/common/*.c)
+PROGS = $(patsubst %.c,%.o,$(SRCS))
 
 KVER = $(shell uname -r)
 KMAJ = $(shell echo $(KVER) | \
@@ -15,7 +15,7 @@ sed -e 's/^[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
 
 OUT = bin
 
-.PHONY: all directories clean install_common
+.PHONY: all directories clean install_common docs
 
 build: directories $(OUT)/fan $(OUT)/bme $(OUT)/volt $(OUT)/leak $(OUT)/pru1.out
 
@@ -25,10 +25,10 @@ wireless: $(OUT)/wireless
 $(OUT):
 	mkdir -p $(OUT)
 
-$(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common 
+$(OUT)/volt: /usr/local/lib/libhiredis.so main/volt.c spi/common.o
 	$(COMPILE.c) $^ -lpthread -fno-trapping-math -o $@ -lhiredis
 
-$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c utils/json/cJSON.o $(PROGS)
+$(OUT)/bme: /usr/local/lib/libhiredis.so main/bme.c $(PROGS)
 	$(COMPILE.c) $^ -o $@ -lhiredis
 
 $(OUT)/wireless: /usr/local/lib/libhiredis.so main/wireless.c $(PROGS)
@@ -47,8 +47,12 @@ $(OUT)/pru1.out:
     	echo "Kernel version incompatible with remoteproc implementation, skipping PRU..." ; \
 	fi
 
-%: %.c
+%.o: %.c
 	$(COMPILE.c) -c $^ -o $@
+
+docs:
+	@doxygen docs/Doxyfile
+	@open docs/html/index.html
 
 /usr/local/lib/libhiredis.so:
 	git clone https://github.com/redis/hiredis.git
@@ -57,9 +61,6 @@ $(OUT)/pru1.out:
 	echo 'include /usr/local/lib' >> /etc/ld.so.conf
 	ldconfig
 	rm -rf hiredis
-
-utils/json/cJSON.o:
-	gcc -c utils/json/cJSON.c -o $@
 
 install_common:
 	sed -i -e "3cSIMAR_FOLDER=$$PWD" ./start/simar_startup.sh

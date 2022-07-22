@@ -2,6 +2,11 @@
  * @brief Common declarations for SPI operations
  */
 
+/*!
+ * @defgroup spi SPI
+ * @brief SPI and GPIO communication (including module selection)
+ */
+
 #ifndef SPIUTIL_H
 #define SPIUTIL_H
 
@@ -26,12 +31,14 @@
 
 #define SENSOR_FAIL -2
 #define DB_FAIL -3
+#define BUS_FAIL -9
 
+/// Convenience enum for translating common pin names to their respective integer values
 enum pins {
-  USR_0 = 53,
-  USR_1 = 54,
-  USR_2 = 55,
-  USR_3 = 56,
+  USR_0 = 53,  /// User LED 0
+  USR_1 = 54,  /// User LED 1
+  USR_2 = 55,  /// User LED 2
+  USR_3 = 56,  /// User LED 3
   P9_11 = 30,
   P9_12 = 60,
   P9_13 = 31,
@@ -110,21 +117,114 @@ typedef struct {
   int number;
 } gpio_t;
 
+/**
+ * \ingroup spi
+ * \defgroup spiComm Communication
+ * @brief Communication methods
+ */
+
+/**
+ * \ingroup spiComm
+ * @brief Opens SPI bus
+ * @param[in] device Device location (Ex.: /dev/spidev0.0)
+ * @param[in] mode SPI mode
+ * @param[in] bits Bits per word
+ * @param[in] speed Speed (in Hz)
+ * @param[in] cs CS Pin
+ * @returns SPI bus open operation result
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
 int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed);
+
+/**
+ * \ingroup spiComm
+ * @brief Closes SPI bus
+ * @returns SPI bus close operation result
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
 int spi_close();
+
+/**
+ * \ingroup spiComm
+ * @brief Transfers buffer through SPI with determined length
+ * @param[in] tx TX buffer
+ * @param[out] rx RX buffer
+ * @param[in] len Buffer length
+ * @returns SPI transfer operation result
+ * @retval 0 Success
+ * @retval -1 Failure
+ */
 int spi_transfer(const char* tx, const char* rx, int len);
 
-void bbb_mmio_set_output(gpio_t gpio);
-void bbb_mmio_set_input(gpio_t gpio);
-void bbb_mmio_set_high(gpio_t gpio);
-void bbb_mmio_set_low(gpio_t gpio);
-uint32_t bbb_mmio_input(gpio_t gpio);
-int bbb_mmio_get_gpio(gpio_t* gpio);
-void delay_mili(uint32_t ms);
+void mmio_set_output(gpio_t gpio);
+void mmio_set_input(gpio_t gpio);
+void mmio_set_high(gpio_t gpio);
+void mmio_set_low(gpio_t gpio);
+uint32_t mmio_input(gpio_t gpio);
+int mmio_get_gpio(gpio_t* gpio);
+
+/**
+ * \ingroup spi
+ * \defgroup spiModule Module
+ * @brief SPI module settings and communication methods
+ */
+
+/**
+ * @brief Selects module at given address
+ * @param[in] address Address
+ * @param[in] module Module value
+ * @returns SPI transfer operation result
+ * @retval 0 Success
+ * @retval 1 Failure
+ */
 int select_module(int address, int module);
+
+/**
+ * \ingroup spiModule
+ * @brief Writes data directly to SPI (module selection)
+ * @param[in] address Data
+ * @param[in] len Length of data
+ * @returns SPI transfer operation result
+ * @retval 0 Success
+ * @retval 1 Failure
+ */
 int transfer_module(char* data, int len);
+
+/**
+ * \ingroup spiModule
+ * @brief Writes digital data at given address
+ * @param[in] address address
+ * @param[in] data Data to write
+ * @param[in] len Data buffer length
+ * @returns SPI transfer operation result
+ * @retval >=0 Success
+ * @retval <0 Failure
+ */
 int write_data(int address, char* data, int len);
+
+/**
+ * \ingroup spiModule
+ * @brief Reads digital data at given address
+ * @param[in] address address
+ * @param[out] rx Buffer to write data to
+ * @returns SPI transfer operation result
+ * @retval >=0 Success
+ * @retval <0 Failure
+ */
 int read_data(int address, char* rx, int len);
+
+/**
+ * \ingroup spiModule
+ * @brief Writes directly to module selector (bypassing parity)
+ * @param[in] tx Information to transmit
+ * @param[out] rx Buffer to write data to
+ * @param[in] rx Length of message to transmit
+ * @returns SPI transfer operation result
+ * @retval >=0 Success
+ * @retval <0 Failure
+ */
 int spi_mod_comm(char* tx, char* rx, int len);
 
 #endif

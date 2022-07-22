@@ -130,9 +130,9 @@ const char lcd_table[96][5] = {
  */
 int lcd_write(int mode, uint8_t const* wr, int len) {
   if (mode)
-    bbb_mmio_set_high(dc);
+    mmio_set_high(dc);
   else
-    bbb_mmio_set_low(dc);
+    mmio_set_low(dc);
 
   return spi_transfer(wr, wr, len);
 }
@@ -144,9 +144,9 @@ int lcd_write(int mode, uint8_t const* wr, int len) {
  */
 void lcd_set_backlight(int state) {
   if (state)
-    bbb_mmio_set_high(bl);
+    mmio_set_high(bl);
   else
-    bbb_mmio_set_low(bl);
+    mmio_set_low(bl);
 }
 
 /**
@@ -235,17 +235,17 @@ void lcd_line(int x, int y, int len, int thickness) {
 void lcd_init(char* vop, char* bias) {
   fd = spi_open(device, &spi_mode, &bits, &speed);
 
-  bbb_mmio_get_gpio(&rst);
-  bbb_mmio_get_gpio(&bl);
-  bbb_mmio_get_gpio(&dc);
+  mmio_get_gpio(&rst);
+  mmio_get_gpio(&bl);
+  mmio_get_gpio(&dc);
 
-  bbb_mmio_set_output(rst);
-  bbb_mmio_set_output(bl);
-  bbb_mmio_set_output(dc);
+  mmio_set_output(rst);
+  mmio_set_output(bl);
+  mmio_set_output(dc);
 
-  bbb_mmio_set_low(rst);
+  mmio_set_low(rst);
   nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
-  bbb_mmio_set_high(rst);
+  mmio_set_high(rst);
   nanosleep((const struct timespec[]){{0, 500000000L}}, NULL);
 
   lcd_write(0, "\x21", 1);  // Ext. cmd set

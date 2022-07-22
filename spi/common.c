@@ -22,27 +22,27 @@ int mod_mode = SPI_MODE_3;
 gpio_t cs_pin = {.pin = P9_17};
 gpio_t ds_pin = {.pin = P9_14};
 
-void bbb_mmio_set_output(gpio_t gpio) {
+void mmio_set_output(gpio_t gpio) {
   gpio.base[MMIO_OE_ADDR / 4] &= (0xFFFFFFFF ^ (1 << gpio.number));
 }
 
-void bbb_mmio_set_input(gpio_t gpio) {
+void mmio_set_input(gpio_t gpio) {
   gpio.base[MMIO_OE_ADDR / 4] |= (1 << gpio.number);
 }
 
-void bbb_mmio_set_high(gpio_t gpio) {
+void mmio_set_high(gpio_t gpio) {
   gpio.base[MMIO_GPIO_SETDATAOUT / 4] = 1 << gpio.number;
 }
 
-void bbb_mmio_set_low(gpio_t gpio) {
+void mmio_set_low(gpio_t gpio) {
   gpio.base[MMIO_GPIO_CLEARDATAOUT / 4] = 1 << gpio.number;
 }
 
-uint32_t bbb_mmio_input(gpio_t gpio) {
+uint32_t mmio_input(gpio_t gpio) {
   return gpio.base[MMIO_GPIO_DATAIN / 4] & (1 << gpio.number);
 }
 
-int bbb_mmio_get_gpio(gpio_t* gpio) {
+int mmio_get_gpio(gpio_t* gpio) {
   // Validate input parameters.
   int base = gpio->pin / 32;
   int number = gpio->pin % 32;
@@ -72,17 +72,6 @@ int bbb_mmio_get_gpio(gpio_t* gpio) {
   return MMIO_SUCCESS;
 }
 
-/**
- * @brief Opens SPI bus
- * @param[in] device Device location (Ex.: /dev/spidev0.0)
- * @param[in] mode SPI mode
- * @param[in] bits Bits per word
- * @param[in] speed Speed (in Hz)
- * @param[in] cs CS Pin
- * @returns SPI bus open operation result
- * @retval 0 Success
- * @retval -1 Failure
- */
 int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed) {
   fd = open(device, O_RDWR);
 
@@ -99,34 +88,19 @@ int spi_open(const char* device, uint32_t* mode, uint8_t* bits, uint32_t* speed)
   _speed = *speed;
   _mode = *mode;
 
-  bbb_mmio_get_gpio(&cs_pin);
-  bbb_mmio_get_gpio(&ds_pin);
+  mmio_get_gpio(&cs_pin);
+  mmio_get_gpio(&ds_pin);
 
-  bbb_mmio_set_output(cs_pin);
-  bbb_mmio_set_output(ds_pin);
+  mmio_set_output(cs_pin);
+  mmio_set_output(ds_pin);
 
   return fd;
 }
 
-/**
- * @brief Closes SPI bus
- * @returns SPI bus close operation result
- * @retval 0 Success
- * @retval !0 Failure
- */
 int spi_close() {
   return close(fd);
 }
 
-/**
- * @brief Transfers buffer through SPI with determined length
- * @param[in] tx TX buffer
- * @param[out] rx RX buffer
- * @param[in] len Buffer length
- * @returns SPI transfer operation result
- * @retval 0 Success
- * @retval 1 Failure
- */
 int spi_transfer(const char* tx, const char* rx, int len) {
   int ret;
   struct spi_ioc_transfer tr = {
@@ -140,7 +114,7 @@ int spi_transfer(const char* tx, const char* rx, int len) {
 
   ret = ioctl(fd, SPI_IOC_MESSAGE(len), &tr);
 
-  return ret < 0;
+  return ret < 0 ? -1 : 0;
 }
 
 /**
@@ -158,15 +132,6 @@ int calculate_parity(int x) {
   return y & 1;
 }
 
-/**
- * @brief Secondary mode 3 only SPI tranfer utility (internal)
- * @param[in] tx TX buffer
- * @param[out] rx RX buffer
- * @param[in] len Buffer length
- * @returns SPI transfer operation result
- * @retval 0 Success
- * @retval 1 Failure
- */
 int spi_mod_comm(char* tx, char* rx, int len) {
   int ret;
 
@@ -186,26 +151,18 @@ int spi_mod_comm(char* tx, char* rx, int len) {
       .bits_per_word = mod_bits,
   };
 
-  bbb_mmio_set_low(ds_pin);
+  mmio_set_low(ds_pin);
   ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-  bbb_mmio_set_high(ds_pin);
+  mmio_set_high(ds_pin);
 
   if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &_mode);
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &_bits);
 
-  return ret < 0;
+  return ret < 0 ? -1 : 0;
 }
 
-/**
- * @brief Selects module at given address
- * @param[in] address Address
- * @param[in] module Module value
- * @returns SPI transfer operation result
- * @retval 0 Success
- * @retval 1 Failure
- */
 int select_module(int address, int module) {
   unsigned long msg;
   int parity = calculate_parity(address);
@@ -218,27 +175,10 @@ int select_module(int address, int module) {
   return spi_mod_comm(msg_c, msg_c, 1);
 }
 
-/**
- * @brief Writes data directly to SPI (module selection)
- * @param[in] address Data
- * @param[in] len Length of data
- * @returns SPI transfer operation result
- * @retval 0 Success
- * @retval 1 Failure
- */
 int transfer_module(char* data, int len) {
   return spi_mod_comm(data, data, len);
 }
 
-/**
- * @brief Writes digital data at given address
- * @param[in] address address
- * @param[in] data Data to write
- * @param[in] len Data buffer length
- * @returns SPI transfer operation result
- * @retval >=0 Success
- * @retval <0 Failure
- */
 int write_data(int address, char* data, int len) {
   int ret;
 
@@ -249,12 +189,12 @@ int write_data(int address, char* data, int len) {
   if (_bits != 8)
     ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &mod_bits);
 
-  bbb_mmio_set_high(cs_pin);
-  bbb_mmio_set_low(cs_pin);
+  mmio_set_high(cs_pin);
+  mmio_set_low(cs_pin);
 
-  bbb_mmio_set_high(cs_pin);
+  mmio_set_high(cs_pin);
   ret = write(fd, data, len);
-  bbb_mmio_set_low(cs_pin);
+  mmio_set_low(cs_pin);
 
   if (_mode != SPI_MODE_3)
     ioctl(fd, SPI_IOC_WR_MODE, &_mode);
@@ -263,15 +203,6 @@ int write_data(int address, char* data, int len) {
 
   return ret;
 }
-
-/**
- * @brief Reads digital data at given address
- * @param[in] address address
- * @param[out] rx Buffer to write data to
- * @returns SPI transfer operation result
- * @retval >=0 Success
- * @retval <0 Failure
- */
 
 int read_data(int address, char* rx, int len) {
   int ret;
