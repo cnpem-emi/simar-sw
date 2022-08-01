@@ -346,7 +346,7 @@ int main(int argc, char* argv[]) {
 
       for (int j = 0; j < WINDOW_SIZE; j++) {
         nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
-        if(bme_read(&bme_sensors[i].dev, &bme_sensors[i].data) != BME280_OK) {
+        if (bme_read(&bme_sensors[i].dev, &bme_sensors[i].data) != BME280_OK) {
           continue;
         }
 
