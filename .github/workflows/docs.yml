@@ -1,0 +1,31 @@
+name: 'Doxygen'
+author: 'Jonah Lawrence'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: "true"
+
+    - name: Install Doxygen
+      run: sudo apt-get install doxygen -y
+      shell: bash
+
+    - name: Generate Doxygen Documentation
+      run: doxygen ${{ inputs.config_file }}
+      shell: bash
+      
+    - name: Create .nojekyll (ensures pages with underscores work on gh pages)
+      run: touch ${{ inputs.folder }}/.nojekyll
+      shell: bash
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
+        folder: docs/html
