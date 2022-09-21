@@ -1,0 +1,28 @@
+var sht3x_2common_2common_8h =
+[
+    [ "ARRAY_SIZE", "sht3x_2common_2common_8h.html#a6242a25f9d996f0cc4f4cdb911218b75", null ],
+    [ "CRC8_INIT", "sht3x_2common_2common_8h.html#a1a748fe27fb199e3a200974254f13c7d", null ],
+    [ "CRC8_LEN", "sht3x_2common_2common_8h.html#ac5c4160fec9bd3c452d19228dde0ef9c", null ],
+    [ "CRC8_POLYNOMIAL", "sht3x_2common_2common_8h.html#a26d68e90012b14c430d91affea2c1d32", null ],
+    [ "MAX_NAME_LEN", "sht3x_2common_2common_8h.html#afd709f201d7643c3909621f620ea648a", null ],
+    [ "NO_ERROR", "sht3x_2common_2common_8h.html#a258bb72419ef143530a2f8f55e7d57af", null ],
+    [ "SENSIRION_COMMAND_SIZE", "sht3x_2common_2common_8h.html#a303f7072408255432175fa9455494b99", null ],
+    [ "SENSIRION_MAX_BUFFER_WORDS", "sht3x_2common_2common_8h.html#a51ffd86e39824eb4f39f9eb8f2faf707", null ],
+    [ "SENSIRION_NUM_WORDS", "sht3x_2common_2common_8h.html#abe178babe95c5265a5b6c3353e0a4f63", null ],
+    [ "SENSIRION_WORD_SIZE", "sht3x_2common_2common_8h.html#a2411c194647ae2c8d965cc731926f058", null ],
+    [ "STATUS_FAIL", "sht3x_2common_2common_8h.html#a9024ed05f7df784637ef7b44ca8caf97", null ],
+    [ "STATUS_OK", "sht3x_2common_2common_8h.html#a2403320c41f08e7567cb169de5db66b3", null ],
+    [ "sensirion_bytes_to_float", "sht3x_2common_2common_8h.html#a01192172544da8fde336393e674f1cbf", null ],
+    [ "sensirion_bytes_to_uint16_t", "sht3x_2common_2common_8h.html#a213dc79814ba740094a50456d5ff23a8", null ],
+    [ "sensirion_bytes_to_uint32_t", "sht3x_2common_2common_8h.html#a0b4b0315d1dccbc6f4bfa597efdc9db6", null ],
+    [ "sensirion_common_check_crc", "sht3x_2common_2common_8h.html#a11043f668d9df89dc698a0edcdeb3efe", null ],
+    [ "sensirion_common_generate_crc", "sht3x_2common_2common_8h.html#a28a16b2a8660de84fbad96f237a6dabf", null ],
+    [ "sensirion_fill_cmd_send_buf", "sht3x_2common_2common_8h.html#a9a2b5bc64139a84b4011ba94873e47b8", null ],
+    [ "sensirion_i2c_delayed_read_cmd", "sht3x_2common_2common_8h.html#a3984cd677430b52b1b9d9c57517d6dfa", null ],
+    [ "sensirion_i2c_general_call_reset", "sht3x_2common_2common_8h.html#a1756dcca78c1ba9ec6ea3a6be4aed0ce", null ],
+    [ "sensirion_i2c_read_cmd", "sht3x_2common_2common_8h.html#ade8479d9748d07974f8e7e88c166e381", null ],
+    [ "sensirion_i2c_read_words", "sht3x_2common_2common_8h.html#a61c2efbc31ab106dcd1d888412485db7", null ],
+    [ "sensirion_i2c_read_words_as_bytes", "sht3x_2common_2common_8h.html#aba9b6fbed3b9f06f891a593f17fa3e0f", null ],
+    [ "sensirion_i2c_write_cmd", "sht3x_2common_2common_8h.html#a1fc554d0b46a85dd8dfdfd149c4bdd21", null ],
+    [ "sensirion_i2c_write_cmd_with_args", "sht3x_2common_2common_8h.html#a0e9acb8401c9168d321fd7eff74fbab8", null ]
+];

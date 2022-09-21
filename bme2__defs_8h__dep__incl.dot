@@ -1,0 +1,19 @@
+digraph "bme280/bme2_defs.h"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="bme280/bme2_defs.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="bme280/bme2.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bme2_8h.html",tooltip=" "];
+  Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="bme280/bme2.c",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bme2_8c.html",tooltip=" "];
+  Node2 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="bme280/common/common.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bme280_2common_2common_8h.html",tooltip="Common declarations for BME280 operation on AM335x."];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="main/bme.c",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bme_8c.html",tooltip="Main starting point for BME280 sensor module."];
+  Node4 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="main/wireless.c",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$wireless_8c.html",tooltip="Main starting point for wireless SIMAR."];
+  Node4 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="bme280/common/common.c",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bme280_2common_2common_8c.html",tooltip="Common functions for BMx device operation on AM335x."];
+}

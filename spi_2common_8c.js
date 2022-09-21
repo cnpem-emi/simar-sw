@@ -1,0 +1,27 @@
+var spi_2common_8c =
+[
+    [ "calculate_parity", "spi_2common_8c.html#a48b6d5a86061665b7774f9c3e1a943cc", null ],
+    [ "mmio_get_gpio", "spi_2common_8c.html#a43a120dc2fc182d3fe61769d34cf4285", null ],
+    [ "mmio_input", "spi_2common_8c.html#afde39453443d627f27881ec54733ade3", null ],
+    [ "mmio_set_high", "spi_2common_8c.html#a3dfeb486a29131f600b337889b08f34f", null ],
+    [ "mmio_set_input", "spi_2common_8c.html#aa28cd04a9d8f1f5418ed2e110ba9f5b3", null ],
+    [ "mmio_set_low", "spi_2common_8c.html#a41cfe7f245de261fbb41e4591c221e14", null ],
+    [ "mmio_set_output", "spi_2common_8c.html#ac6a1cc04fa4fbcb29722630720f80399", null ],
+    [ "read_data", "group__spiModule.html#ga4f599c24b77a8c45bee52bb0c290860e", null ],
+    [ "select_module", "spi_2common_8c.html#a3e72afd6fa49b53f34f7b86b8c149aa1", null ],
+    [ "spi_close", "group__spiComm.html#gac54b0dcdb1c3c7f2c652639ddebb58ce", null ],
+    [ "spi_mod_comm", "group__spiModule.html#gacb2e03dd222a47930928e0a3a748a009", null ],
+    [ "spi_open", "group__spiComm.html#ga968d98569b427752f4798f05ba8fb6bd", null ],
+    [ "spi_transfer", "group__spiComm.html#ga92caafc38b2327a8d2dcdd7d5695fe88", null ],
+    [ "transfer_module", "group__spiModule.html#ga40fe919c1468169bee343c112d7e1321", null ],
+    [ "write_data", "group__spiModule.html#gaae72590a50e1e0f2724816e414aa4299", null ],
+    [ "_bits", "spi_2common_8c.html#a16e06294a117e7c9ceef9fb4364838c9", null ],
+    [ "_delay", "spi_2common_8c.html#a6f06c89283276c650d5bbdfd91efb9d6", null ],
+    [ "_mode", "spi_2common_8c.html#a4eacaff1de2b12549f9a20f81ef8d0be", null ],
+    [ "_speed", "spi_2common_8c.html#a811c4d778bf155f058f516e39bbd9db2", null ],
+    [ "cs_pin", "spi_2common_8c.html#a8989209f11bbdc3111093110cb77aa7a", null ],
+    [ "ds_pin", "spi_2common_8c.html#a81b2024948772d960a8603ad33507d29", null ],
+    [ "fd", "spi_2common_8c.html#a6f8059414f0228f0256115e024eeed4b", null ],
+    [ "mod_bits", "spi_2common_8c.html#a72df7bd73df3eabff1738d355aa0f5ae", null ],
+    [ "mod_mode", "spi_2common_8c.html#afba3ea2e105ee27655e433fc837d1363", null ]
+];

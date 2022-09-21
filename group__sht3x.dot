@@ -1,0 +1,15 @@
+digraph "SHT3x"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=box];
+  rankdir=LR;
+  Node5 [label="Sensor Settings",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__sht3xSensorSettings.html",tooltip="Generic API for accessing sensor settings."];
+  Node3 [label="Sensor Data",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__sht3xSensorData.html",tooltip="Data processing of sensor."];
+  Node4 [label="Sensor Power",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__sht3xSensorPower.html",tooltip="Generic API for configuring sensor power mode."];
+  Node2 [label="Initialization",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__sht3xInit.html",tooltip="Initialize the sensor and device structure."];
+  Node1 [label="SHT3x",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Product Overview and Sensor API Source Code"];
+  Node1->Node2 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node3 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node4 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node5 [shape=plaintext, dir="back", style="solid"];
+}

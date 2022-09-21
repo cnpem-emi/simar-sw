@@ -1,0 +1,12 @@
+digraph "main" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  dir_5c982d53a68cdbcd421152b4020263a9 [shape=box, label="main", style="filled", fillcolor="#eeeeff", pencolor="black", URL="dir_5c982d53a68cdbcd421152b4020263a9.html"];
+  dir_43b1249680df6b63ffc365fc1c1a0e46 [shape=box label="sht3x" fillcolor="white" style="filled" color="red" URL="dir_43b1249680df6b63ffc365fc1c1a0e46.html"];
+  dir_e9fc29d502cfa802eafb6079bb83cea0 [shape=box label="bme280" fillcolor="white" style="filled" color="red" URL="dir_e9fc29d502cfa802eafb6079bb83cea0.html"];
+  dir_74e3a7ad2c0344d5e2e438cbd6b4ae4f [shape=box label="spi" URL="dir_74e3a7ad2c0344d5e2e438cbd6b4ae4f.html"];
+  dir_5c982d53a68cdbcd421152b4020263a9->dir_43b1249680df6b63ffc365fc1c1a0e46 [headlabel="1", labeldistance=1.5 headhref="dir_000001_000002.html"];
+  dir_5c982d53a68cdbcd421152b4020263a9->dir_e9fc29d502cfa802eafb6079bb83cea0 [headlabel="2", labeldistance=1.5 headhref="dir_000001_000000.html"];
+  dir_5c982d53a68cdbcd421152b4020263a9->dir_74e3a7ad2c0344d5e2e438cbd6b4ae4f [headlabel="3", labeldistance=1.5 headhref="dir_000001_000003.html"];
+}

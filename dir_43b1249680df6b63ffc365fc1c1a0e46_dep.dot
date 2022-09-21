@@ -1,0 +1,13 @@
+digraph "sht3x" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_43b1249680df6b63ffc365fc1c1a0e46 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_43b1249680df6b63ffc365fc1c1a0e46.html"];
+    dir_43b1249680df6b63ffc365fc1c1a0e46 [shape=plaintext label="sht3x"];
+    dir_30326407f3a9b4354cdee93e3ea1d204 [shape=box label="common" color="black" fillcolor="white" style="filled" URL="dir_30326407f3a9b4354cdee93e3ea1d204.html"];
+  }
+  dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5 [shape=box label="i2c" URL="dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5.html"];
+  dir_43b1249680df6b63ffc365fc1c1a0e46->dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5 [headlabel="1", labeldistance=1.5 headhref="dir_000002_000004.html"];
+  dir_43b1249680df6b63ffc365fc1c1a0e46->dir_30326407f3a9b4354cdee93e3ea1d204 [headlabel="1", labeldistance=1.5 headhref="dir_000002_000006.html"];
+}

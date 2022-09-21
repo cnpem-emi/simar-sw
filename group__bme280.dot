@@ -1,0 +1,21 @@
+digraph "BME280"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=box];
+  rankdir=LR;
+  Node4 [label="Sensor Settings",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiSensorSettings.html",tooltip="Generic API for accessing sensor settings."];
+  Node1 [label="BME280",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Product Overview and Sensor API Source Code"];
+  Node2 [label="Initialization",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiInit.html",tooltip="Initialize the sensor and device structure."];
+  Node8 [label="Sensor Delay",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiSensorDelay.html",tooltip="Generic API for measuring sensor delay."];
+  Node3 [label="Registers",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiRegister.html",tooltip="Generic API for accessing sensor registers."];
+  Node7 [label="Sensor Data",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiSensorData.html",tooltip="Data processing of sensor."];
+  Node5 [label="Sensor Mode",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiSensorMode.html",tooltip="Generic API for configuring sensor power mode."];
+  Node6 [label="System",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__bme280ApiSystem.html",tooltip="API that performs system-level operations."];
+  Node1->Node2 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node3 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node4 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node5 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node6 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node7 [shape=plaintext, dir="back", style="solid"];
+  Node1->Node8 [shape=plaintext, dir="back", style="solid"];
+}

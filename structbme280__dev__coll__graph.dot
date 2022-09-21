@@ -1,0 +1,11 @@
+digraph "bme280_dev"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="bme280_dev",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="bme280 device structure"];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" calib_data" ,fontname="Helvetica"];
+  Node2 [label="bme280_calib_data",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structbme280__calib__data.html",tooltip="Calibration data."];
+  Node3 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" settings" ,fontname="Helvetica"];
+  Node3 [label="bme280_settings",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structbme280__settings.html",tooltip="bme280 sensor settings structure which comprises of mode, oversampling and filter settings."];
+}

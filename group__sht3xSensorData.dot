@@ -1,0 +1,9 @@
+digraph "Sensor Data"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=box];
+  rankdir=LR;
+  Node1 [label="Sensor Data",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Data processing of sensor."];
+  Node2 [label="SHT3x",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$group__sht3x.html",tooltip="Product Overview and Sensor API Source Code"];
+  Node2->Node1 [shape=plaintext, dir="back", style="solid"];
+}

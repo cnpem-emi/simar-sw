@@ -1,0 +1,12 @@
+digraph "bme280" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_e9fc29d502cfa802eafb6079bb83cea0 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_e9fc29d502cfa802eafb6079bb83cea0.html"];
+    dir_e9fc29d502cfa802eafb6079bb83cea0 [shape=plaintext label="bme280"];
+    dir_ab2f7104ae08031308914e7904ffa2f8 [shape=box label="common" color="black" fillcolor="white" style="filled" URL="dir_ab2f7104ae08031308914e7904ffa2f8.html"];
+  }
+  dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5 [shape=box label="i2c" URL="dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5.html"];
+  dir_ab2f7104ae08031308914e7904ffa2f8->dir_4c25b4c2861b8c1e9e0cda0ff69bb2a5 [headlabel="1", labeldistance=1.5 headhref="dir_000005_000004.html"];
+}
