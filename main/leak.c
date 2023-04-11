@@ -82,8 +82,8 @@ int main(int argc, char* argv[]) {
 
     if (read(fd, digital_buffer, 1)) {
       for (int i = 0; i < 8; i++) {
-        if (digital_buffer[0] >> i & 0b00000001) {
-          /*snprintf(frame.data, 4, "%d %d", i, 1);  // TODO: Decide what to write
+        /*if (digital_buffer[0] >> i & 0b00000001) {
+          snprintf(frame.data, 4, "%d %d", i, 1);  // TODO: Decide what to write
           if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
             syslog(LOG_ERR, "CAN communication error");
             return -2;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
           reply = redisCommand(c, "HSET leak_detector %d %d", i,
                                ((digital_buffer[0] >> i) & 0b00000001));
           freeReplyObject(reply);
-        }
+        //}
       }
 
       nanosleep(period, NULL);
