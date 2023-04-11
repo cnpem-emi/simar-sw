@@ -38,5 +38,4 @@ digraph "main/bme.c"
   Node16 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node1 -> Node17 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node17 [label="../utils/json/cJSON.h",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
-  Node1 -> Node15 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
 }
