@@ -92,10 +92,10 @@ int main(int argc, char* argv[]) {
           reply = redisCommand(c, "HSET leak_detector %d %d", i,
                                ((digital_buffer[0] >> i) & 0b00000001));
           freeReplyObject(reply);
+        
+          nanosleep(period, NULL);
         //}
       }
-
-      nanosleep(period, NULL);
     }
   }
 }
