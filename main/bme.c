@@ -485,7 +485,7 @@ int main(int argc, char* argv[]) {
     }
 
     freeReplyObject(reply_remote);
-    nanosleep((const struct timespec[]){{0, 250000000L}}, NULL);
+    nanosleep((const struct timespec[]){{0, 999999999L}}, NULL);
   }
 
   redisFree(c);
