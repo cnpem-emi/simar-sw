@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
   struct dirent* de;
   int found_loc = 0;
 
-  const struct timespec period = {0, 750000000L};
+  const struct timespec period = {0, 999999999L};
 
   time_t t = time(NULL);
   struct tm* current_time = localtime(&t);
